@@ -8,7 +8,7 @@ services:
       - "8000:8000"
     # Isse database server restart hone par delete nahi hoga
     volumes:
-      - ./backend/database.sqlite:/app/database.sqlite
+      - backend_data:/app/data
     restart: always
 
   frontend:
@@ -19,3 +19,5 @@ services:
     depends_on:
       - backend
     restart: always
+volumes:
+  backend_data:
