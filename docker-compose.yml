@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: meta_backend
+    ports:
+      - "8000:8000"
+    # Isse database server restart hone par delete nahi hoga
+    volumes:
+      - ./backend/database.sqlite:/app/database.sqlite
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: meta_frontend
+    ports:
+      - "3000:80"  # Frontend server par Port 3000 par chalega
+    depends_on:
+      - backend
+    restart: always
