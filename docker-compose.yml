@@ -25,7 +25,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://admin:password123@db:5432/kpilotdb
+      DATABASE_URL: postgresql+psycopg2://admin:password123@db:5432/kpilotdb
     depends_on:
       db:
         condition: service_healthy
