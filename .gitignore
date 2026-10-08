@@ -27,3 +27,6 @@ Thumbs.db
 # Build outputs
 dist/
 build/
+
+# Local deployment notes
+local_deployment_notes.md

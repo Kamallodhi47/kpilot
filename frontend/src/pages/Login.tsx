@@ -69,7 +69,7 @@ export default function Login() {
       {/* Top Left Logo */}
       <div className="absolute top-8 left-8 z-20">
         <Link to="/">
-          <img src="/img/nyx-logo.png" alt="NYX Logo" className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity" />
+          <span className="text-2xl font-black italic tracking-wider cursor-pointer hover:opacity-80 transition-opacity" style={{ background: 'linear-gradient(90deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textShadow: '0 0 20px rgba(255, 154, 158, 0.4)' }}>proteinsolution_Ai</span>
         </Link>
       </div>
 
