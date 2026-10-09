@@ -391,81 +391,86 @@ export default function CampaignBuilder() {
       {/* 3. MAIN WORKSPACE 3-COLUMN SPLIT */}
       <div className="flex-1 flex overflow-hidden">
         
-        {/* ================= COLUMN 1: LEFT STEPPER WORKFLOW (RED CIRCLED IN USER SCREENSHOT) ================= */}
-        <div className="w-[280px] sm:w-[310px] bg-[#090910] border-r border-white/5 flex flex-col shrink-0 p-3 space-y-2.5 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
+        {/* ================= COLUMN 1: LEFT STEPPER WORKFLOW (EXACT MATCH TO SCREENSHOT) ================= */}
+        <div className="w-[290px] sm:w-[320px] bg-[#090910] border-r border-white/5 flex flex-col shrink-0 p-3 relative overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
           
-          {workflowSteps.map((step) => {
-            const isActive = currentStep === step.id;
-            const isCompleted = currentStep > step.id;
+          {/* Continuous Vertical Connector Line running through all step icons */}
+          <div className="absolute left-[33px] top-[26px] bottom-[28px] w-[1.5px] bg-white/15 pointer-events-none z-0" />
 
-            return (
-              <div
-                key={step.id}
-                onClick={() => setCurrentStep(step.id)}
-                className={`
-                  p-3.5 rounded-2xl border transition-all cursor-pointer relative group flex flex-col justify-between min-h-[82px]
-                  ${isActive 
-                    ? 'bg-[#181329] border-purple-500/60 shadow-lg shadow-purple-950/40 ring-1 ring-purple-500/30' 
-                    : isCompleted 
-                      ? 'bg-[#0e0e18] border-emerald-500/20 hover:border-white/20' 
-                      : 'bg-[#0e0e18] border-white/5 hover:border-white/15'
-                  }
-                `}
-              >
-                {/* Top Row: Icon + Title + Dot */}
-                <div className="flex items-start justify-between gap-2.5">
-                  <div className="flex items-start gap-3">
-                    
-                    {/* Step Icon */}
-                    {step.iconType === 'radar' && isActive ? (
-                      <div className="w-8 h-8 rounded-full bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-purple-300 relative shrink-0">
-                        <div className="w-2.5 h-2.5 rounded-full bg-purple-400 animate-ping absolute" />
-                        <Radio className="w-4 h-4 text-purple-300 relative z-10" />
-                      </div>
-                    ) : isCompleted ? (
-                      <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-                        <Check className="w-4 h-4" />
-                      </div>
-                    ) : (
-                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${
-                        isActive 
-                          ? 'bg-purple-600 text-white' 
-                          : 'bg-white/5 text-gray-400 border border-white/10'
-                      }`}>
-                        {step.id}
-                      </div>
-                    )}
+          <div className="space-y-3 relative z-10">
+            {workflowSteps.map((step) => {
+              const isActive = currentStep === step.id;
 
-                    {/* Titles */}
-                    <div>
-                      <h4 className={`text-xs sm:text-sm font-bold tracking-tight leading-tight ${isActive ? 'text-white' : 'text-gray-300'}`}>
-                        {step.title}
-                      </h4>
-                      <p className="text-[11px] text-gray-400 mt-0.5 leading-snug">
-                        {step.subtitle}
-                      </p>
+              return (
+                <div
+                  key={step.id}
+                  onClick={() => setCurrentStep(step.id)}
+                  className={`
+                    p-3.5 rounded-2xl border transition-all cursor-pointer relative group flex flex-col justify-between
+                    ${isActive 
+                      ? 'bg-[#151226] border-[#8b5cf6] shadow-[0_0_15px_rgba(139,92,246,0.2)] ring-1 ring-[#8b5cf6]/40' 
+                      : 'bg-[#0e0e18] border-white/10 hover:border-white/20'
+                    }
+                  `}
+                >
+                  {/* Main Row */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      
+                      {/* Step Icon with exact Concentric Radar for Step 1 */}
+                      {step.id === 1 && isActive ? (
+                        <div className="w-9 h-9 rounded-full bg-purple-950/80 border border-purple-500/40 flex items-center justify-center relative shrink-0 shadow-inner">
+                          {/* Outer Ripple */}
+                          <div className="w-7 h-7 rounded-full border border-purple-400/40 flex items-center justify-center">
+                            {/* Middle Ring */}
+                            <div className="w-4 h-4 rounded-full border border-purple-300/60 flex items-center justify-center">
+                              {/* Inner Glowing Core */}
+                              <div className="w-2 h-2 rounded-full bg-[#c084fc] shadow-[0_0_6px_#c084fc]" />
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
+                          isActive 
+                            ? 'bg-[#7c3aed] text-white shadow-md shadow-purple-500/30' 
+                            : 'bg-[#151522] text-gray-400 border border-white/15 group-hover:border-white/30'
+                        }`}>
+                          {step.id}
+                        </div>
+                      )}
+
+                      {/* Text Details */}
+                      <div>
+                        <h4 className={`text-xs sm:text-[13px] font-bold tracking-tight leading-tight ${
+                          isActive ? 'text-[#e9d5ff]' : 'text-[#cbd5e1]'
+                        }`}>
+                          {step.title}
+                        </h4>
+                        <p className={`text-[11px] mt-0.5 leading-snug ${
+                          isActive ? 'text-[#c084fc]/80' : 'text-[#64748b]'
+                        }`}>
+                          {step.subtitle}
+                        </p>
+                      </div>
                     </div>
+
+                    {/* Far Right Active Purple Dot */}
+                    {isActive && (
+                      <span className="w-2 h-2 rounded-full bg-[#a855f7] shadow-[0_0_6px_#a855f7] shrink-0 mt-1" />
+                    )}
                   </div>
 
-                  {/* Right Status Dot */}
+                  {/* Status Badge below */}
                   {isActive && (
-                    <span className="w-2 h-2 rounded-full bg-[#a855f7] shadow-[0_0_8px_#a855f7] shrink-0 mt-1" />
+                    <div className="mt-2.5 pt-1.5 flex items-center gap-1.5 text-[10px] font-bold tracking-wider font-mono text-[#c084fc]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#c084fc] animate-pulse" />
+                      <span>{step.statusTag}</span>
+                    </div>
                   )}
                 </div>
-
-                {/* Bottom Row Status Tag */}
-                {isActive && (
-                  <div className="mt-2.5 pt-2 border-t border-purple-500/20 flex items-center justify-between text-[10px]">
-                    <span className="text-purple-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
-                      {step.statusTag}
-                    </span>
-                    <span className="text-gray-400 font-mono">Step {step.id}/5</span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
 
         </div>
 
