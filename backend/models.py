@@ -13,5 +13,8 @@ class User(Base):
     meta_access_token = Column(String, nullable=True)
     meta_account_id = Column(String, nullable=True)
     meta_account_name = Column(String, nullable=True)
+    selected_ad_account_id = Column(String, nullable=True)
+    selected_ad_account_name = Column(String, nullable=True)
     
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
