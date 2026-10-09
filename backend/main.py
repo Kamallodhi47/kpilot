@@ -217,6 +217,32 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     access_token = create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
+@app.get("/api/auth/me")
+def get_current_user_profile(current_user: Optional[User] = Depends(get_optional_user)):
+    if not current_user:
+        return {
+            "authenticated": False,
+            "email": "user@proteinsolution.in",
+            "name": "User",
+            "initial": "U",
+            "selected_ad_account_id": None,
+            "selected_ad_account_name": None
+        }
+    
+    local_part = current_user.email.split("@")[0]
+    display_name = local_part.replace(".", " ").replace("_", " ").replace("-", " ").title()
+    initial = display_name[0].upper() if display_name else "U"
+    
+    return {
+        "authenticated": True,
+        "email": current_user.email,
+        "name": display_name,
+        "initial": initial,
+        "meta_account_name": current_user.meta_account_name,
+        "selected_ad_account_id": current_user.selected_ad_account_id,
+        "selected_ad_account_name": current_user.selected_ad_account_name
+    }
+
 @app.get("/api/meta/status")
 def get_meta_status(current_user: Optional[User] = Depends(get_optional_user), db: Session = Depends(get_db)):
     token = get_system_token(current_user)

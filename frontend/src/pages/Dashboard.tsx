@@ -41,6 +41,10 @@ export default function Dashboard({ defaultTab = 'recommendation' }: DashboardPr
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
   
+  const [userInitial, setUserInitial] = useState<string>('U');
+  const [userName, setUserName] = useState<string>('User');
+  const [userEmail, setUserEmail] = useState<string>('');
+  
   // Optimization Actions Applied State
   const [appliedRecommendations, setAppliedRecommendations] = useState<Record<string, boolean>>({});
 
@@ -55,6 +59,20 @@ export default function Dashboard({ defaultTab = 'recommendation' }: DashboardPr
   const showNotification = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const fetchUserProfile = async () => {
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: { ...getAuthHeader() }
+      });
+      const data = await res.json();
+      if (data.name) setUserName(data.name);
+      if (data.initial) setUserInitial(data.initial);
+      if (data.email) setUserEmail(data.email);
+    } catch (err) {
+      console.error("Failed to fetch user:", err);
+    }
   };
 
   const fetchMetaStatus = async () => {
@@ -92,6 +110,7 @@ export default function Dashboard({ defaultTab = 'recommendation' }: DashboardPr
   };
 
   useEffect(() => {
+    fetchUserProfile();
     fetchMetaStatus();
     fetchCampaigns();
   }, []);
@@ -171,12 +190,12 @@ export default function Dashboard({ defaultTab = 'recommendation' }: DashboardPr
             </div>
           </button>
 
-          {/* User Profile Avatar "K" */}
+          {/* Dynamic User Profile Avatar */}
           <div 
-            className="w-9 h-9 rounded-full bg-[#f97316] text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white/10 cursor-pointer hover:opacity-90"
-            title="Account: Kamal (Admin)"
+            className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#ea580c] to-[#f97316] text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white/10 cursor-pointer hover:opacity-90"
+            title={userEmail ? `User: ${userEmail}` : `User: ${userName}`}
           >
-            K
+            {userInitial}
           </div>
         </div>
       </div>
