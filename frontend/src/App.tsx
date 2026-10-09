@@ -19,10 +19,11 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/build" element={<CampaignBuilder />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          
+          <Route path="/optimise" element={<Dashboard defaultTab="recommendation" />} />
+          <Route path="/recommendation" element={<Dashboard defaultTab="recommendation" />} />
           <Route path="/processing" element={<AIProcessing />} />
           <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/meta/callback" element={<MetaCallback />} />
+          <Route path="/meta/callback" element={<MetaCallback />} />
           <Route path="/settings" element={<div className="text-white text-2xl font-bold">Settings (Coming Soon)</div>} />
         </Route>
       </Routes>
