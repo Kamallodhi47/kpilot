@@ -5,17 +5,30 @@ export default function CampaignBuilder() {
   const [isMetaConnected, setIsMetaConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
 
+  const getAuthHeader = () => {
+    const token = localStorage.getItem('token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  };
+
   useEffect(() => {
-    fetch('/api/meta/status')
+    fetch('/api/meta/status', {
+      headers: { ...getAuthHeader() }
+    })
       .then(res => res.json())
-      .then(data => setIsMetaConnected(data.connected))
+      .then(data => setIsMetaConnected(Boolean(data.connected)))
       .catch(err => console.error(err));
   }, []);
 
   
   const handleDisconnect = async () => {
     try {
-      await fetch('/api/meta/disconnect', { method: 'POST' });
+      await fetch('/api/meta/disconnect', { 
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          ...getAuthHeader() 
+        }
+      });
       setIsMetaConnected(false);
     } catch (err) {
       console.error(err);
@@ -25,9 +38,15 @@ export default function CampaignBuilder() {
   const handleConnect = async () => {
     setIsConnecting(true);
     try {
-      const res = await fetch('/api/meta/connect', { method: 'POST' });
+      const res = await fetch('/api/meta/connect', { 
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          ...getAuthHeader() 
+        }
+      });
       const data = await res.json();
-      if (data.success) {
+      if (data.success || data.connected) {
         setIsMetaConnected(true);
       }
     } catch (err) {

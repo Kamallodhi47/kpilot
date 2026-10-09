@@ -15,28 +15,55 @@ const data = [
 
 export default function Dashboard() {
   const [isMetaConnected, setIsMetaConnected] = useState(false);
+  const [metaAccountName, setMetaAccountName] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("You must connect your Meta Ads account before creating a new campaign.");
   const navigate = useNavigate();
 
+  const getAuthHeader = () => {
+    const token = localStorage.getItem('token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  };
+
   useEffect(() => {
     // Check initial connection status
-    fetch('/api/meta/status')
+    fetch('/api/meta/status', {
+      headers: { ...getAuthHeader() }
+    })
       .then(res => res.json())
-      .then(data => setIsMetaConnected(data.connected))
+      .then(data => {
+        setIsMetaConnected(Boolean(data.connected));
+        if (data.account_name) {
+          setMetaAccountName(data.account_name);
+        }
+      })
       .catch(err => console.error("Failed to check meta status:", err));
   }, []);
 
   const handleConnectMeta = async () => {
     setIsConnecting(true);
     try {
-      const res = await fetch('/api/meta/connect', { method: 'POST' });
+      const res = await fetch('/api/meta/connect', { 
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          ...getAuthHeader() 
+        }
+      });
       const data = await res.json();
-      if (data.success) {
+      if (data.success || data.connected) {
         setIsMetaConnected(true);
-      } else { setShowError(true); setErrorMsg(data.message || "Failed to connect to Meta"); }
-    } catch (err) { console.error(err); setShowError(true); setErrorMsg(err.message || "Network error"); }
+        setMetaAccountName(data.account_name || 'Vansh Jaat');
+      } else { 
+        setShowError(true); 
+        setErrorMsg(data.message || data.detail || "Failed to connect to Meta"); 
+      }
+    } catch (err: any) { 
+      console.error(err); 
+      setShowError(true); 
+      setErrorMsg(err.message || "Network error"); 
+    }
     setIsConnecting(false);
   };
 
@@ -58,7 +85,7 @@ export default function Dashboard() {
           {isMetaConnected ? (
             <div className="flex items-center gap-2 bg-[#1a231f] text-emerald-400 border border-emerald-500/20 px-4 py-2.5 rounded-xl font-medium text-sm shadow-sm">
               <CheckCircle2 className="w-4 h-4" />
-              Meta Connected
+              Meta Connected {metaAccountName ? `(${metaAccountName})` : ''}
             </div>
           ) : (
             <button 

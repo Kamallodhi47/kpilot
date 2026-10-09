@@ -26,6 +26,10 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql+psycopg2://admin:password123@db:5432/kpilotdb
+      META_ACCESS_TOKEN: EAAkZCvUyXja0BSsWWSaX52lDbLUzThBZBC4dQdSXGp2TEB07dZB8Yp3a7VD3YAbH03vxNxvZAxd95XSfZB49kmiNzDqZCM53dpu2LBCDIPyWyeZAZAJRDcsQ4GYmchbp6ZBfHduDE4jbQYiDfy5npnDZAPiogy8xMrPgpQT8s6f7bNLjKATzOEZBJKgWacXcqFHRHf4NKzO1WZBk
+      FB_APP_ID: 2603357056765357
+    env_file:
+      - ./backend/.env
     depends_on:
       db:
         condition: service_healthy

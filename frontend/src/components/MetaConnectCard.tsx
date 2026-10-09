@@ -1,12 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, Button, Badge } from './ui';
 import { Globe, Camera, ShieldCheck, Activity, CheckCircle2 } from 'lucide-react';
 
 export function MetaConnectCard() {
   const [isConnected, setIsConnected] = useState(false);
+  const [accountName, setAccountName] = useState<string | null>(null);
+  const [adAccounts, setAdAccounts] = useState<any[]>([]);
   const [isConnecting, setIsConnecting] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    fetch('/api/meta/status', {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.connected) {
+          setIsConnected(true);
+          setAccountName(data.account_name);
+          setAdAccounts(data.ad_accounts || []);
+        }
+      })
+      .catch(err => console.error(err));
+  }, []);
 
   const handleConnect = async () => {
     setIsConnecting(true);
@@ -15,14 +33,18 @@ export function MetaConnectCard() {
       const res = await fetch('/api/meta/connect', { 
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         }
       });
-      if (res.ok) {
+      const data = await res.json();
+      if (res.ok && (data.success || data.connected)) {
         setIsConnected(true);
+        setAccountName(data.account_name);
+        setAdAccounts(data.ad_accounts || []);
         navigate('/onboarding');
       } else {
-        console.error('Failed to connect Meta');
+        console.error('Failed to connect Meta:', data);
       }
     } catch (err) {
       console.error(err);
