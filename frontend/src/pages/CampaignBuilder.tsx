@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { 
   Play, Settings, Image as ImageIcon, CheckCircle2, Circle, MessageSquare, 
   Mic, Send, Paperclip, Moon, BarChart2, Sparkles, ExternalLink, Globe, 
-  ShieldCheck, RefreshCw, AlertCircle, ArrowRight, Zap, Target
+  ShieldCheck, RefreshCw, AlertCircle, ArrowRight, Zap, Target, Volume2, 
+  Folder, Layers, Radio, Check, ChevronDown, Maximize2, X, FileText, ChevronRight
 } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface AdAccount {
   id: string;
@@ -22,6 +24,21 @@ interface CampaignData {
 }
 
 export default function CampaignBuilder() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Active step in the workflow (1: Details, 2: Planning, 3: Creatives, 4: Preview, 5: Launch)
+  const [currentStep, setCurrentStep] = useState<number>(1);
+  const [isDraftStarted, setIsDraftStarted] = useState<boolean>(false);
+  const [activeBottomTab, setActiveBottomTab] = useState<'campaign' | 'pixeo' | 'analytics'>('campaign');
+  const [isNeoPanelOpen, setIsNeoPanelOpen] = useState<boolean>(true);
+
+  // User Profile
+  const [userName, setUserName] = useState('User');
+  const [userInitial, setUserInitial] = useState('U');
+  const [userEmail, setUserEmail] = useState('');
+
+  // Meta Integration State
   const [isMetaConnected, setIsMetaConnected] = useState(false);
   const [accountName, setAccountName] = useState<string | null>(null);
   const [adAccounts, setAdAccounts] = useState<AdAccount[]>([]);
@@ -52,8 +69,12 @@ export default function CampaignBuilder() {
   const [liveCampaigns, setLiveCampaigns] = useState<CampaignData[]>([]);
   
   // Chat Assistant State
-  const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'neo'; text: string }>>([
-    { sender: 'neo', text: "Hello! I'm NEO, your autonomous AI marketing agent. What campaign would you like to build or launch today?" }
+  const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'neo'; text: string; time?: string }>>([
+    { 
+      sender: 'neo', 
+      text: "Hello! I'm NEO, your autonomous AI marketing agent. What campaign would you like to build or launch today?",
+      time: 'Just now'
+    }
   ]);
   const [chatInput, setChatInput] = useState('');
 
@@ -62,7 +83,19 @@ export default function CampaignBuilder() {
     return token ? { 'Authorization': `Bearer ${token}` } : {};
   };
 
-  // 1. Fetch Meta Status & Ad Accounts
+  // 1. Fetch User Profile
+  useEffect(() => {
+    fetch('/api/auth/me', { headers: { ...getAuthHeader() } })
+      .then(res => res.json())
+      .then(data => {
+        if (data.name) setUserName(data.name);
+        if (data.initial) setUserInitial(data.initial);
+        if (data.email) setUserEmail(data.email);
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+  // 2. Fetch Meta Status & Ad Accounts
   const fetchStatus = () => {
     fetch('/api/meta/status', {
       headers: { ...getAuthHeader() }
@@ -83,7 +116,7 @@ export default function CampaignBuilder() {
       .catch(err => console.error(err));
   };
 
-  // 2. Fetch Live Campaigns from Meta
+  // 3. Fetch Live Campaigns
   const fetchCampaigns = () => {
     fetch('/api/meta/campaigns', {
       headers: { ...getAuthHeader() }
@@ -100,7 +133,19 @@ export default function CampaignBuilder() {
   useEffect(() => {
     fetchStatus();
     fetchCampaigns();
-  }, []);
+
+    // Check if initial prompt was passed from Home
+    if (location.state && (location.state as any).initialPrompt) {
+      const initPrompt = (location.state as any).initialPrompt;
+      setProductName(initPrompt);
+      setIsDraftStarted(true);
+      setChatMessages(prev => [
+        ...prev,
+        { sender: 'user', text: initPrompt, time: 'Just now' },
+        { sender: 'neo', text: `Got it! I've started a new campaign draft for "${initPrompt}". Let's configure the campaign details or click "Generate AI Strategy".`, time: 'Just now' }
+      ]);
+    }
+  }, [location.state]);
 
   // Switch or Verify Ad Account
   const handleSelectAccount = async (accId: string) => {
@@ -129,6 +174,7 @@ export default function CampaignBuilder() {
     setIsGenerating(true);
     setPublishedResult(null);
     setPublishError(null);
+    setIsDraftStarted(true);
     try {
       const res = await fetch('/api/ai/generate-campaign', {
         method: 'POST',
@@ -147,11 +193,12 @@ export default function CampaignBuilder() {
         setSelectedHeadline(data.headlines[0] || '');
         setSelectedPrimaryText(data.primary_texts[0] || '');
         setSelectedCta(data.call_to_action || 'SHOP_NOW');
+        setCurrentStep(3); // Advance to Creative Generation
         
         // Add chat feedback
         setChatMessages(prev => [
           ...prev,
-          { sender: 'neo', text: `✨ I have generated a complete marketing campaign plan for "${productName}" with 3 high-converting copies and Meta targeting. Review and click "Launch to Meta Ads" when ready!` }
+          { sender: 'neo', text: `✨ I have generated a complete marketing plan for "${productName}" with 3 high-converting copies and Meta targeting. Review the creatives and click Next to preview!`, time: 'Just now' }
         ]);
       }
     } catch (err: any) {
@@ -187,9 +234,10 @@ export default function CampaignBuilder() {
       if (res.ok && data.success) {
         setPublishedResult(data);
         fetchCampaigns();
+        setCurrentStep(5);
         setChatMessages(prev => [
           ...prev,
-          { sender: 'neo', text: `🚀 Great news! Your Meta Campaign has been successfully published to Ad Account ${data.ad_account_id} with Campaign ID #${data.campaign_id}.` }
+          { sender: 'neo', text: `🚀 Great news! Your Meta Campaign has been successfully published to Ad Account ${data.ad_account_id} with Campaign ID #${data.campaign_id}.`, time: 'Just now' }
         ]);
       } else {
         setPublishError(data.detail || data.error || 'Failed to publish campaign to Meta');
@@ -205,386 +253,643 @@ export default function CampaignBuilder() {
     if (!chatInput.trim()) return;
     
     const userMsg = chatInput;
-    setChatMessages(prev => [...prev, { sender: 'user', text: userMsg }]);
+    setChatMessages(prev => [...prev, { sender: 'user', text: userMsg, time: 'Just now' }]);
     setChatInput('');
+    setIsDraftStarted(true);
     
     setTimeout(() => {
       setChatMessages(prev => [
         ...prev,
-        { sender: 'neo', text: `I understand! I'm analyzing your request: "${userMsg}". You can adjust parameters in the Campaign Studio on the left and click Generate to update your ads in real-time.` }
+        { sender: 'neo', text: `I understand! Formulating AI strategy for "${userMsg}". You can adjust parameters in the Campaign Studio on the left or click Generate AI Campaign.`, time: 'Just now' }
       ]);
     }, 600);
   };
 
+  const workflowSteps = [
+    {
+      id: 1,
+      title: 'Campaign Details',
+      subtitle: 'Capturing campaign details',
+      statusTag: '● CAPTURING',
+      iconType: 'radar'
+    },
+    {
+      id: 2,
+      title: 'Campaign Planning',
+      subtitle: 'Build the campaign structure',
+      statusTag: 'READY',
+      iconType: 'number'
+    },
+    {
+      id: 3,
+      title: 'Creative Generation',
+      subtitle: 'Generate creative direction',
+      statusTag: 'AI ENGINE',
+      iconType: 'number'
+    },
+    {
+      id: 4,
+      title: 'Ad Preview',
+      subtitle: 'Prepare ads and messaging',
+      statusTag: 'PREVIEW',
+      iconType: 'number'
+    },
+    {
+      id: 5,
+      title: 'Launch',
+      subtitle: 'Review and publish the campaign',
+      statusTag: '1-CLICK META',
+      iconType: 'number'
+    },
+  ];
+
   return (
-    <div className="h-full w-full flex flex-col bg-[#07070b] text-white overflow-hidden">
+    <div className="h-full w-full flex flex-col bg-[#07070b] text-white overflow-hidden select-none font-sans">
       
-      {/* Top Bar */}
-      <div className="h-16 flex items-center justify-between px-6 bg-[#0c0c14] border-b border-white/5 shrink-0">
+      {/* 1. TOP HEADER - Exact match to screenshot */}
+      <div className="h-14 flex items-center justify-between px-6 bg-[#07070b] border-b border-white/10 shrink-0 z-20">
         <div className="flex items-center gap-3">
-          <h1 className="text-xl font-black tracking-widest bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
-            KPILOT AI
+          <h1 className="text-xl font-black tracking-wider text-white font-sans">
+            XENO
           </h1>
-          <span className="text-xs bg-purple-500/10 text-purple-400 px-2.5 py-1 rounded-full font-bold border border-purple-500/20">
-            AUTONOMOUS ENGINE
-          </span>
         </div>
 
-        {/* Agency / Client Account Indicator */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-[#14141e] border border-white/10 px-3.5 py-1.5 rounded-xl text-xs">
-            <Globe className="w-3.5 h-3.5 text-blue-400" />
-            <span className="text-gray-400">Meta Agency:</span>
-            <span className="font-bold text-white">{accountName || 'Vansh Jaat'}</span>
-            <span className="w-2 h-2 rounded-full bg-emerald-400 ml-1"></span>
+        {/* Right Header Controls: Theme toggle & Avatar */}
+        <div className="flex items-center gap-3">
+          <button 
+            className="flex items-center justify-between w-12 h-6 bg-[#181824] border border-white/10 rounded-full p-1 transition-all cursor-pointer hover:border-purple-500/40"
+            title="Toggle Theme"
+          >
+            <div className="w-4 h-4 rounded-full bg-[#0d091a] flex items-center justify-center text-purple-300 shadow-inner">
+              <Moon className="w-3 h-3" />
+            </div>
+          </button>
+
+          {/* User Initial Circle */}
+          <div 
+            className="w-8 h-8 rounded-full bg-[#f97316] text-white flex items-center justify-center font-bold text-xs shadow-md ring-2 ring-white/10 cursor-pointer"
+            title={userEmail ? `User: ${userEmail}` : `User: ${userName}`}
+          >
+            {userInitial}
+          </div>
+        </div>
+      </div>
+
+      {/* 2. SUBHEADER: Campaign Workspace & NEO Header */}
+      <div className="h-12 flex items-center justify-between px-6 bg-[#0a0a12] border-b border-white/5 shrink-0 z-10">
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-300">
+            <Layers className="w-4 h-4" />
+          </div>
+          <div>
+            <h2 className="text-sm font-bold text-white flex items-center gap-2">
+              Campaign Workspace
+            </h2>
+            <p className="text-[11px] text-gray-400 font-mono">project-2481</p>
+          </div>
+        </div>
+
+        {/* Middle Controls: Campaign selector & New Campaign */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center bg-[#13121f] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-gray-300 cursor-pointer hover:border-white/20">
+            <span>{liveCampaigns.length > 0 ? `${liveCampaigns.length} campaigns active` : 'No campaigns yet.'}</span>
+            <ChevronDown className="w-3.5 h-3.5 ml-2 text-gray-500" />
           </div>
 
-          <button 
-            onClick={() => { fetchStatus(); fetchCampaigns(); }}
-            title="Refresh Status"
-            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors border border-white/5"
+          <button
+            onClick={() => {
+              setIsDraftStarted(true);
+              setCurrentStep(1);
+            }}
+            className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-xs font-medium transition-all shadow-sm cursor-pointer"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
+            New campaign
+          </button>
+        </div>
+
+        {/* Right Panel Header: NEO */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-white px-2 py-1 bg-purple-500/10 rounded-lg border border-purple-500/20">
+            <MessageSquare className="w-3.5 h-3.5 text-purple-400" />
+            <span>NEO</span>
+          </div>
+          <button 
+            onClick={() => setIsNeoPanelOpen(!isNeoPanelOpen)}
+            className="p-1 text-gray-400 hover:text-white rounded transition-colors"
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+          </button>
+          <button 
+            onClick={() => setIsNeoPanelOpen(false)}
+            className="p-1 text-gray-400 hover:text-white rounded transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Main Workspace Layout */}
-      <div className="flex-1 flex overflow-hidden p-3 gap-3">
+      {/* 3. MAIN WORKSPACE 3-COLUMN SPLIT */}
+      <div className="flex-1 flex overflow-hidden">
         
-        {/* Left Studio Column */}
-        <div className="flex-1 bg-[#0f0f18] rounded-2xl border border-white/5 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+        {/* ================= COLUMN 1: LEFT STEPPER WORKFLOW (RED CIRCLED IN USER SCREENSHOT) ================= */}
+        <div className="w-[280px] sm:w-[310px] bg-[#090910] border-r border-white/5 flex flex-col shrink-0 p-3 space-y-2.5 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
           
-          {/* Ad Account Selector Bar */}
-          <div className="bg-[#151522] border border-white/5 rounded-2xl p-5 shadow-md">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <div>
-                <span className="text-[11px] font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-purple-400" /> CLIENT / AD ACCOUNT SELECTOR
-                </span>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  Select an accessible Meta Ad Account or enter any client Ad Account ID.
-                </p>
-              </div>
+          {workflowSteps.map((step) => {
+            const isActive = currentStep === step.id;
+            const isCompleted = currentStep > step.id;
 
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                {!showCustomInput ? (
-                  <>
-                    <select 
-                      value={selectedAdAccount}
-                      onChange={(e) => {
-                        if (e.target.value === '__custom__') {
-                          setShowCustomInput(true);
-                        } else {
-                          handleSelectAccount(e.target.value);
-                        }
-                      }}
-                      className="bg-[#1f1f2e] border border-white/10 rounded-xl px-3.5 py-2 text-xs font-semibold text-white outline-none focus:border-purple-500 cursor-pointer"
-                    >
-                      {adAccounts.map(acc => (
-                        <option key={acc.id} value={acc.id}>
-                          {acc.name} ({acc.id}) • {acc.currency}
-                        </option>
-                      ))}
-                      <option value="__custom__">+ Enter Custom Client Ad Account ID</option>
-                    </select>
-                  </>
-                ) : (
-                  <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <input 
-                      type="text"
-                      placeholder="e.g. act_1441161704572702"
-                      value={customAdAccountInput}
-                      onChange={(e) => setCustomAdAccountInput(e.target.value)}
-                      className="bg-[#1f1f2e] border border-purple-500/50 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-purple-400 w-48"
-                    />
-                    <button 
-                      onClick={() => handleSelectAccount(customAdAccountInput)}
-                      className="bg-purple-600 hover:bg-purple-500 text-white text-xs px-3 py-1.5 rounded-xl font-bold transition-colors"
-                    >
-                      Link
-                    </button>
-                    <button 
-                      onClick={() => setShowCustomInput(false)}
-                      className="text-gray-400 hover:text-white text-xs px-2"
-                    >
-                      Cancel
-                    </button>
+            return (
+              <div
+                key={step.id}
+                onClick={() => setCurrentStep(step.id)}
+                className={`
+                  p-3.5 rounded-2xl border transition-all cursor-pointer relative group flex flex-col justify-between min-h-[82px]
+                  ${isActive 
+                    ? 'bg-[#181329] border-purple-500/60 shadow-lg shadow-purple-950/40 ring-1 ring-purple-500/30' 
+                    : isCompleted 
+                      ? 'bg-[#0e0e18] border-emerald-500/20 hover:border-white/20' 
+                      : 'bg-[#0e0e18] border-white/5 hover:border-white/15'
+                  }
+                `}
+              >
+                {/* Top Row: Icon + Title + Dot */}
+                <div className="flex items-start justify-between gap-2.5">
+                  <div className="flex items-start gap-3">
+                    
+                    {/* Step Icon */}
+                    {step.iconType === 'radar' && isActive ? (
+                      <div className="w-8 h-8 rounded-full bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-purple-300 relative shrink-0">
+                        <div className="w-2.5 h-2.5 rounded-full bg-purple-400 animate-ping absolute" />
+                        <Radio className="w-4 h-4 text-purple-300 relative z-10" />
+                      </div>
+                    ) : isCompleted ? (
+                      <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                        <Check className="w-4 h-4" />
+                      </div>
+                    ) : (
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${
+                        isActive 
+                          ? 'bg-purple-600 text-white' 
+                          : 'bg-white/5 text-gray-400 border border-white/10'
+                      }`}>
+                        {step.id}
+                      </div>
+                    )}
+
+                    {/* Titles */}
+                    <div>
+                      <h4 className={`text-xs sm:text-sm font-bold tracking-tight leading-tight ${isActive ? 'text-white' : 'text-gray-300'}`}>
+                        {step.title}
+                      </h4>
+                      <p className="text-[11px] text-gray-400 mt-0.5 leading-snug">
+                        {step.subtitle}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right Status Dot */}
+                  {isActive && (
+                    <span className="w-2 h-2 rounded-full bg-[#a855f7] shadow-[0_0_8px_#a855f7] shrink-0 mt-1" />
+                  )}
+                </div>
+
+                {/* Bottom Row Status Tag */}
+                {isActive && (
+                  <div className="mt-2.5 pt-2 border-t border-purple-500/20 flex items-center justify-between text-[10px]">
+                    <span className="text-purple-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+                      {step.statusTag}
+                    </span>
+                    <span className="text-gray-400 font-mono">Step {step.id}/5</span>
                   </div>
                 )}
               </div>
+            );
+          })}
+
+        </div>
+
+        {/* ================= COLUMN 2: CENTER WORKSPACE CANVAS ================= */}
+        <div className="flex-1 bg-[#0b0b12] flex flex-col overflow-hidden relative">
+          
+          {/* Top Connect Bar */}
+          <div className="p-4 sm:p-5 border-b border-white/5 flex items-center justify-between bg-[#0e0e18]/80">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={fetchStatus}
+                className="px-4 py-2 rounded-full bg-[#7c3aed] hover:bg-[#6d28d9] text-white text-xs font-semibold shadow-lg shadow-purple-600/30 transition-all cursor-pointer flex items-center gap-2"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>{isMetaConnected ? `Connected: ${accountName || 'Vansh Jaat'}` : 'Connect ad accounts'}</span>
+              </button>
+              
+              {isMetaConnected && (
+                <span className="text-xs text-gray-400 hidden md:inline">
+                  Ad Account: <strong className="text-purple-300 font-mono">{selectedAdAccount || 'act_1441161704572702'}</strong>
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <select 
+                value={selectedAdAccount}
+                onChange={(e) => handleSelectAccount(e.target.value)}
+                className="bg-[#181828] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-gray-300 outline-none focus:border-purple-500 cursor-pointer"
+              >
+                {adAccounts.map(acc => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.name} ({acc.id})
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
-          {/* Form & AI Campaign Generator */}
-          <div className="bg-[#151522] border border-purple-500/20 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-purple-600/10 blur-[100px] pointer-events-none" />
+          {/* Canvas Body */}
+          <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-white/10">
             
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <span className="text-[11px] font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" /> CLOUD AI CAMPAIGN STUDIO
-                </span>
-                <h2 className="text-xl font-bold text-white mt-1">Autonomous Meta Campaign Generator</h2>
-              </div>
-              
-              <button 
-                onClick={handleGenerateAI}
-                disabled={isGenerating}
-                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 disabled:opacity-60"
-              >
-                <Zap className="w-4 h-4 text-amber-300" />
-                {isGenerating ? 'AI Generating Plan...' : 'Generate with Cloud AI'}
-              </button>
-            </div>
-
-            {/* Inputs Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-semibold text-gray-300 block mb-1.5">Product / Offer Name</label>
-                <input 
-                  type="text" 
-                  value={productName}
-                  onChange={(e) => setProductName(e.target.value)}
-                  className="w-full bg-[#1c1c2b] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:border-purple-500 transition-colors"
-                  placeholder="e.g. Whey Protein Isolate"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-gray-300 block mb-1.5">Target Audience & Location</label>
-                <input 
-                  type="text" 
-                  value={targetAudience}
-                  onChange={(e) => setTargetAudience(e.target.value)}
-                  className="w-full bg-[#1c1c2b] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:border-purple-500 transition-colors"
-                  placeholder="e.g. Fitness lovers, Gym goers in India"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-gray-300 block mb-1.5">Daily Budget (₹ INR)</label>
-                <input 
-                  type="number" 
-                  value={dailyBudget}
-                  onChange={(e) => setDailyBudget(Number(e.target.value))}
-                  className="w-full bg-[#1c1c2b] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:border-purple-500 transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-gray-300 block mb-1.5">Campaign Objective</label>
-                <select 
-                  value={objective}
-                  onChange={(e) => setObjective(e.target.value)}
-                  className="w-full bg-[#1c1c2b] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:border-purple-500 cursor-pointer"
-                >
-                  <option value="OUTCOME_SALES">Sales / Conversions (OUTCOME_SALES)</option>
-                  <option value="OUTCOME_LEADS">Lead Generation (OUTCOME_LEADS)</option>
-                  <option value="OUTCOME_TRAFFIC">Website Traffic (OUTCOME_TRAFFIC)</option>
-                </select>
-              </div>
-            </div>
-
-            {/* AI Generated Strategy & Copies */}
-            {generatedData && (
-              <div className="mt-6 pt-6 border-t border-white/10 space-y-4 animate-in fade-in duration-300">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-purple-300 flex items-center gap-2">
-                    <Target className="w-4 h-4" /> AI Strategy & Copy Variations
-                  </h3>
-                  <span className="text-[11px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-full font-bold border border-emerald-500/20">
-                    Estimated Reach: {generatedData.estimated_reach}
-                  </span>
-                </div>
-
-                {/* Primary Text Selector */}
-                <div>
-                  <label className="text-xs font-bold text-gray-400 block mb-2">Select Primary Ad Copy:</label>
-                  <div className="space-y-2">
-                    {generatedData.primary_texts.map((text: string, i: number) => (
-                      <div 
-                        key={i}
-                        onClick={() => setSelectedPrimaryText(text)}
-                        className={`p-3 rounded-xl border text-xs leading-relaxed cursor-pointer transition-all ${
-                          selectedPrimaryText === text 
-                            ? 'bg-purple-950/40 border-purple-500 text-purple-200 shadow-md' 
-                            : 'bg-[#1b1b2a] border-white/5 text-gray-400 hover:border-white/20'
-                        }`}
-                      >
-                        {text}
-                      </div>
-                    ))}
+            {/* If Draft Not Started: Show the exact Draft Card from Screenshot */}
+            {!isDraftStarted && currentStep === 1 ? (
+              <div className="max-w-2xl mx-auto my-12 bg-[#12111e] border border-dashed border-purple-500/20 rounded-3xl p-8 text-left shadow-2xl relative overflow-hidden group">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold tracking-widest text-purple-400 uppercase font-mono">
+                      NEW CAMPAIGN
+                    </span>
+                    <h3 className="text-xl font-bold text-white mt-0.5">
+                      Draft not started yet
+                    </h3>
                   </div>
                 </div>
 
-                {/* Headline Selector */}
-                <div>
-                  <label className="text-xs font-bold text-gray-400 block mb-2">Select Headline:</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {generatedData.headlines.map((hl: string, i: number) => (
-                      <div 
-                        key={i}
-                        onClick={() => setSelectedHeadline(hl)}
-                        className={`p-2.5 rounded-xl border text-xs font-semibold cursor-pointer text-center transition-all ${
-                          selectedHeadline === hl 
-                            ? 'bg-purple-950/40 border-purple-500 text-purple-200' 
-                            : 'bg-[#1b1b2a] border-white/5 text-gray-400 hover:border-white/20'
-                        }`}
-                      >
-                        {hl}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <p className="text-gray-400 text-sm leading-relaxed mb-6">
+                  Start a fresh campaign from chat or pick an existing project from the project list.
+                </p>
 
-                {/* 1-Click Launch Button */}
-                <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="text-xs text-gray-400">
-                    Ready to launch on Meta Ad Account: <span className="font-bold text-white">{selectedAdAccount}</span>
-                  </div>
-
-                  <button 
-                    onClick={handlePublishToMeta}
-                    disabled={isPublishing}
-                    className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold px-8 py-3 rounded-xl text-sm transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2.5 disabled:opacity-60"
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => {
+                      setIsDraftStarted(true);
+                      setCurrentStep(1);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#1d1b2e] hover:bg-[#26233d] border border-white/10 text-white text-xs font-semibold transition-all shadow-sm"
                   >
-                    <Play className="w-4 h-4 fill-white" />
-                    {isPublishing ? 'Publishing to Meta Ads...' : '1-Click Launch to Meta'}
+                    Open chat
+                  </button>
+                  <button
+                    onClick={() => navigate('/dashboard')}
+                    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white text-xs font-medium transition-all"
+                  >
+                    Projects
                   </button>
                 </div>
               </div>
-            )}
-
-            {/* Error or Success Feedback */}
-            {publishError && (
-              <div className="mt-4 bg-red-500/10 border border-red-500/20 text-red-400 p-3.5 rounded-xl text-xs flex items-center gap-2.5">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <p>{publishError}</p>
-              </div>
-            )}
-
-            {publishedResult && (
-              <div className="mt-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 p-4 rounded-xl text-xs space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold flex items-center gap-1.5 text-sm text-emerald-400">
-                    <CheckCircle2 className="w-4 h-4" /> Campaign Published Live to Meta!
-                  </span>
-                  <a 
-                    href={publishedResult.ads_manager_url} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    className="text-purple-400 hover:text-purple-300 font-bold underline flex items-center gap-1"
-                  >
-                    View in Meta Ads Manager <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-                <p className="text-gray-400">
-                  Meta Campaign ID: <span className="font-mono text-white font-bold">#{publishedResult.campaign_id}</span> • Status: <span className="font-bold uppercase text-emerald-400">{publishedResult.status}</span>
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Live Meta Campaigns List */}
-          <div className="bg-[#151522] border border-white/5 rounded-2xl p-5 shadow-md">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <BarChart2 className="w-4 h-4 text-purple-400" /> Active Meta Campaigns on {selectedAdAccount || 'Account'}
-              </h3>
-              <span className="text-xs text-gray-400 font-semibold">
-                Total: {liveCampaigns.length}
-              </span>
-            </div>
-
-            {liveCampaigns.length === 0 ? (
-              <p className="text-xs text-gray-500 italic py-4 text-center">No campaigns launched yet. Click "Generate with Cloud AI" above to launch your first ad!</p>
             ) : (
-              <div className="space-y-2">
-                {liveCampaigns.map((c, i) => (
-                  <div key={c.id || i} className="flex items-center justify-between p-3 rounded-xl bg-[#1b1b2a] border border-white/5 text-xs">
-                    <div>
-                      <p className="font-bold text-white">{c.name}</p>
-                      <p className="text-[11px] text-gray-400 font-mono mt-0.5">ID: #{c.id} • Goal: {c.objective}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`px-2.5 py-1 rounded-full font-bold text-[10px] ${
-                        c.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                      }`}>
-                        {c.status}
+              /* Interactive Step Form Engine */
+              <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-300">
+                
+                {/* Step 1 & 2: Campaign Details & Planning Form */}
+                {(currentStep === 1 || currentStep === 2) && (
+                  <div className="bg-[#12111f] border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
+                    <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-white">Campaign Setup & Strategy</h3>
+                        <p className="text-xs text-gray-400 mt-0.5">Define your offering and let Cloud AI formulate targeting</p>
+                      </div>
+                      <span className="text-xs px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 font-mono">
+                        Step {currentStep} of 5
                       </span>
                     </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                          Product / Service Name
+                        </label>
+                        <input
+                          type="text"
+                          value={productName}
+                          onChange={(e) => setProductName(e.target.value)}
+                          placeholder="e.g. 100% Organic Whey Protein"
+                          className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                          Target Audience / Ideal Customer
+                        </label>
+                        <input
+                          type="text"
+                          value={targetAudience}
+                          onChange={(e) => setTargetAudience(e.target.value)}
+                          placeholder="e.g. Fitness enthusiasts, athletes in Tier 1 Indian cities"
+                          className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 transition-all"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                            Daily Budget (INR)
+                          </label>
+                          <input
+                            type="number"
+                            value={dailyBudget}
+                            onChange={(e) => setDailyBudget(Number(e.target.value))}
+                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 transition-all"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                            Campaign Objective
+                          </label>
+                          <select
+                            value={objective}
+                            onChange={(e) => setObjective(e.target.value)}
+                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 transition-all cursor-pointer"
+                          >
+                            <option value="OUTCOME_SALES">Conversions & Sales</option>
+                            <option value="OUTCOME_TRAFFIC">Traffic to Website</option>
+                            <option value="OUTCOME_LEADS">Lead Generation</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                          Landing Page URL
+                        </label>
+                        <input
+                          type="url"
+                          value={websiteUrl}
+                          onChange={(e) => setWebsiteUrl(e.target.value)}
+                          placeholder="https://adds.proteinsolution.in"
+                          className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+                      <button
+                        onClick={handleGenerateAI}
+                        disabled={isGenerating || !productName.trim()}
+                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#7c3aed] to-[#6366f1] hover:from-[#6d28d9] hover:to-[#4f46e5] text-white text-sm font-semibold shadow-lg shadow-purple-600/30 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                      >
+                        {isGenerating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                        <span>{isGenerating ? 'Formulating AI Campaign...' : 'Generate AI Strategy & Copies'}</span>
+                      </button>
+                    </div>
                   </div>
-                ))}
+                )}
+
+                {/* Step 3: Creative Generation */}
+                {currentStep === 3 && generatedData && (
+                  <div className="bg-[#12111f] border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
+                    <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-white">Select High-Converting Copy</h3>
+                        <p className="text-xs text-gray-400 mt-0.5">AI has written 3 targeted copy variations</p>
+                      </div>
+                      <span className="text-xs px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-300 font-mono">Step 3 of 5</span>
+                    </div>
+
+                    <div className="space-y-4">
+                      {generatedData.primary_texts.map((text: string, i: number) => (
+                        <div
+                          key={i}
+                          onClick={() => setSelectedPrimaryText(text)}
+                          className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                            selectedPrimaryText === text
+                              ? 'bg-purple-950/30 border-purple-500/60 ring-1 ring-purple-500/30'
+                              : 'bg-black/30 border-white/5 hover:border-white/10'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-semibold text-purple-400 font-mono">Option #{i + 1}</span>
+                            {selectedPrimaryText === text && <Check className="w-4 h-4 text-purple-400" />}
+                          </div>
+                          <p className="text-sm text-gray-200 leading-relaxed">{text}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex justify-between items-center pt-4 border-t border-white/5">
+                      <button
+                        onClick={() => setCurrentStep(2)}
+                        className="px-4 py-2 rounded-xl text-xs text-gray-400 hover:text-white"
+                      >
+                        Back
+                      </button>
+                      <button
+                        onClick={() => setCurrentStep(4)}
+                        className="px-6 py-2.5 rounded-xl bg-[#7c3aed] hover:bg-purple-600 text-white text-xs font-semibold transition-all flex items-center gap-2"
+                      >
+                        <span>Next: Preview Ad</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 4 & 5: Ad Preview & Launch to Meta */}
+                {(currentStep === 4 || currentStep === 5) && (
+                  <div className="bg-[#12111f] border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
+                    <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-white">Live Meta Ad Preview & Launch</h3>
+                        <p className="text-xs text-gray-400 mt-0.5">Ready to publish autonomously to Meta Ad Account</p>
+                      </div>
+                      <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-mono">
+                        {publishedResult ? 'PUBLISHED' : 'READY TO LAUNCH'}
+                      </span>
+                    </div>
+
+                    {/* Meta Ad Mock Card */}
+                    <div className="max-w-md mx-auto bg-black/60 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+                      <div className="p-3.5 flex items-center gap-3 border-b border-white/5">
+                        <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-xs text-white">
+                          P
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold text-white">Protein Solution Official</h5>
+                          <span className="text-[10px] text-gray-400">Sponsored • Meta Verified</span>
+                        </div>
+                      </div>
+
+                      <div className="p-3.5 text-xs text-gray-200 leading-relaxed">
+                        {selectedPrimaryText || generatedData?.primary_texts[0] || 'High impact protein engineered for peak fitness.'}
+                      </div>
+
+                      <div className="aspect-[16/9] bg-gradient-to-tr from-purple-950 via-black to-indigo-950 flex items-center justify-center p-4 relative">
+                        <img 
+                          src="https://images.unsplash.com/photo-1579722821273-0f6c7d44362f?q=80&w=800&auto=format&fit=crop"
+                          alt="Ad Visual"
+                          className="w-full h-full object-cover rounded-xl opacity-80"
+                        />
+                        <span className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] text-purple-300 font-mono">
+                          {selectedHeadline || 'Exclusive Launch Offer'}
+                        </span>
+                      </div>
+
+                      <div className="p-3.5 bg-black/80 flex items-center justify-between">
+                        <div>
+                          <span className="text-[10px] text-gray-400 uppercase font-mono">{websiteUrl.replace('https://', '')}</span>
+                          <h6 className="text-xs font-bold text-white">{selectedHeadline || 'Get Premium Protein Today'}</h6>
+                        </div>
+                        <button className="px-3.5 py-1.5 rounded-lg bg-[#7c3aed] text-white text-xs font-semibold">
+                          {selectedCta}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Publish Actions */}
+                    {publishedResult ? (
+                      <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs space-y-2 text-center">
+                        <CheckCircle2 className="w-6 h-6 mx-auto" />
+                        <p className="font-bold">Campaign Published to Meta Successfully!</p>
+                        <p className="text-gray-300">Campaign ID: <span className="font-mono text-white">{publishedResult.campaign_id}</span></p>
+                        <a
+                          href={publishedResult.ads_manager_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 text-purple-400 underline font-semibold mt-2"
+                        >
+                          View in Meta Ads Manager <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+                        <button
+                          onClick={handlePublishToMeta}
+                          disabled={isPublishing}
+                          className="px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-sm font-bold shadow-lg shadow-emerald-500/30 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                        >
+                          {isPublishing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                          <span>{isPublishing ? 'Launching on Meta Graph API...' : '1-Click Launch Campaign on Meta'}</span>
+                        </button>
+                      </div>
+                    )}
+
+                  </div>
+                )}
+
               </div>
             )}
+
           </div>
 
-        </div>
+          {/* Bottom Bar: Tabs (Campaign, Pixeo, Analytics) */}
+          <div className="h-14 border-t border-white/10 bg-[#090912] px-6 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setActiveBottomTab('campaign')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  activeBottomTab === 'campaign'
+                    ? 'bg-[#7c3aed] text-white shadow-lg shadow-purple-600/30'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>Campaign</span>
+              </button>
 
-        {/* Right Assistant Column (NEO AI) */}
-        <div className="w-[360px] bg-[#0c0c14] flex flex-col rounded-2xl overflow-hidden border border-purple-500/20 shrink-0 relative">
-          
-          <div className="h-14 flex items-center justify-between px-4 bg-[#12121e] border-b border-white/5 shrink-0">
-            <div className="flex items-center gap-2.5 font-bold text-sm text-white">
-              <div className="w-7 h-7 bg-purple-600/20 rounded-lg flex items-center justify-center border border-purple-500/30">
-                <MessageSquare className="w-3.5 h-3.5 text-purple-400" />
-              </div>
-              <span>NEO Assistant</span>
-            </div>
-            <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full font-bold">Online</span>
-          </div>
+              <button
+                onClick={() => navigate('/processing')}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+              >
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>Pixeo</span>
+              </button>
 
-          {/* Chat Messages */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-3 custom-scrollbar">
-            {chatMessages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`p-3 rounded-2xl text-xs max-w-[85%] leading-relaxed ${
-                  msg.sender === 'user' 
-                    ? 'bg-purple-600 text-white rounded-tr-none' 
-                    : 'bg-[#181826] border border-white/5 text-gray-300 rounded-tl-none'
-                }`}>
-                  {msg.text}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Chat Input */}
-          <form onSubmit={handleSendChatMessage} className="p-3 bg-[#12121e] border-t border-white/5 shrink-0">
-            <div className="flex items-center gap-2 bg-[#1b1b2a] rounded-xl px-3 py-2 border border-white/10 focus-within:border-purple-500">
-              <input 
-                type="text"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Ask NEO to create or tweak ads..."
-                className="w-full bg-transparent text-xs text-white placeholder-gray-500 outline-none"
-              />
-              <button type="submit" className="text-purple-400 hover:text-purple-300">
-                <Send className="w-4 h-4" />
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+              >
+                <BarChart2 className="w-3.5 h-3.5" />
+                <span>Analytics</span>
               </button>
             </div>
-          </form>
+
+            <div className="text-xs text-gray-500 font-mono">
+              XENO AI Engine V2.4 Active
+            </div>
+          </div>
 
         </div>
+
+        {/* ================= COLUMN 3: RIGHT AI AGENT NEO PANEL ================= */}
+        {isNeoPanelOpen && (
+          <div className="w-[320px] sm:w-[360px] bg-[#090910] border-l border-white/5 flex flex-col shrink-0 relative">
+            
+            {/* Messages Feed */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3.5 scrollbar-thin scrollbar-thumb-white/10">
+              {chatMessages.map((msg, i) => (
+                <div
+                  key={i}
+                  className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+                >
+                  <div
+                    className={`max-w-[90%] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm leading-relaxed ${
+                      msg.sender === 'user'
+                        ? 'bg-[#7c3aed] text-white rounded-br-none shadow-md'
+                        : 'bg-[#141420] text-gray-200 border border-white/10 rounded-bl-none'
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap">{msg.text}</p>
+                  </div>
+                  {msg.time && (
+                    <span className="text-[10px] text-gray-500 mt-1 px-1">{msg.time}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* NEO Input Bar */}
+            <div className="p-3 bg-[#0c0c16] border-t border-white/5">
+              <form onSubmit={handleSendChatMessage} className="space-y-2">
+                <div className="bg-[#141422] border border-white/10 focus-within:border-purple-500/60 rounded-2xl p-2.5 transition-all">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="Ask NEO to launch, create, or analyze"
+                    className="w-full bg-transparent text-xs sm:text-sm text-white focus:outline-none placeholder-gray-500 px-1"
+                  />
+                  <div className="flex items-center justify-between pt-2 border-t border-white/5 mt-2">
+                    <div className="flex items-center gap-1.5 text-gray-400">
+                      <button type="button" className="p-1.5 hover:text-white rounded-lg transition-colors">
+                        <Paperclip className="w-3.5 h-3.5" />
+                      </button>
+                      <button type="button" className="p-1.5 hover:text-white rounded-lg transition-colors">
+                        <Volume2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button type="button" className="p-1.5 hover:text-white rounded-lg transition-colors">
+                        <Mic className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={!chatInput.trim()}
+                      className="p-1.5 rounded-xl bg-[#7c3aed] hover:bg-purple-600 disabled:opacity-40 text-white transition-all shadow-md shadow-purple-600/30 cursor-pointer"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+          </div>
+        )}
 
       </div>
 
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 5px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
-      `}</style>
     </div>
   );
 }
