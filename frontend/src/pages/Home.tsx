@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mic, Send, Star, Moon, Target, Image as ImageIcon, BarChart2, Lightbulb, LogOut, User as UserIcon, Sparkles } from 'lucide-react';
+import { Mic, Send, Star, Moon, Target, Image as ImageIcon, BarChart2, Lightbulb, LogOut, User as UserIcon, Sparkles, Folder, ArrowUpRight, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
@@ -9,6 +9,9 @@ export default function Home() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [promptInput, setPromptInput] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [activeSuggestion, setActiveSuggestion] = useState<string>('Launch my next campaign autonomously');
+  const [recentProjects, setRecentProjects] = useState<any[]>([]);
+  const [isLoadingProjects, setIsLoadingProjects] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const getAuthHeader = () => {
@@ -30,6 +33,20 @@ export default function Home() {
       .catch(err => {
         console.error("Failed to fetch user profile:", err);
       });
+
+    // Fetch recent campaigns/projects
+    setIsLoadingProjects(true);
+    fetch('/api/meta/campaigns', {
+      headers: { ...getAuthHeader() }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.data && Array.isArray(data.data)) {
+          setRecentProjects(data.data);
+        }
+      })
+      .catch(err => console.error("Failed to fetch campaigns:", err))
+      .finally(() => setIsLoadingProjects(false));
   }, []);
 
   const handleLogout = () => {
@@ -40,7 +57,6 @@ export default function Home() {
   const handleLaunchPrompt = (textToLaunch?: string) => {
     const query = textToLaunch || promptInput;
     if (!query.trim()) return;
-    // Navigate to campaign builder or AI processing with preloaded prompt
     navigate('/build', { state: { initialPrompt: query } });
   };
 
@@ -73,10 +89,10 @@ export default function Home() {
   };
 
   return (
-    <div className="h-full w-full flex flex-col bg-[#0a0a0f] text-white rounded-2xl relative overflow-hidden animate-in fade-in duration-300">
+    <div className="h-full w-full flex flex-col bg-[#0a0a0f] text-white rounded-2xl relative overflow-y-auto scrollbar-none animate-in fade-in duration-300">
       
       {/* Top Header */}
-      <div className="flex justify-between items-center p-6 sm:p-8 z-20 relative">
+      <div className="flex justify-between items-center p-6 sm:p-8 z-20 relative shrink-0">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white font-sans">
             Welcome to NYX, <span className="text-white">{userName}</span>
@@ -148,12 +164,12 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 z-10 relative pb-16">
+      {/* Main Prompt & Center Section */}
+      <div className="flex flex-col items-center justify-center px-4 z-10 relative pt-4 pb-8">
         
         {/* Title */}
-        <h2 className="text-3xl sm:text-5xl font-bold mb-8 sm:mb-10 text-center tracking-tight font-sans">
-          What will you create <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">today?</span>
+        <h2 className="text-3xl sm:text-5xl font-bold mb-8 text-center tracking-tight font-sans">
+          What will you create <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">today?</span>
         </h2>
 
         {/* Big Interactive Input Box */}
@@ -240,27 +256,90 @@ export default function Home() {
         </div>
 
         {/* Quick Suggestion Pills */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 text-xs">
+        <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 text-xs mb-12">
           <span className="text-gray-500 font-bold uppercase tracking-widest text-[11px]">TRY:</span>
           
           {[
             "Launch my next campaign autonomously",
             "Generate creatives for a new launch",
             "What should I focus on this week?"
-          ].map((suggestion, idx) => (
-            <button
-              key={idx}
-              onClick={() => {
-                setPromptInput(suggestion);
-                handleLaunchPrompt(suggestion);
-              }}
-              className="px-4 py-2 rounded-full border border-white/10 hover:border-purple-500/50 text-gray-400 hover:text-white transition-all bg-black/40 hover:bg-purple-950/20 shadow-sm"
-            >
-              {suggestion}
-            </button>
-          ))}
+          ].map((suggestion, idx) => {
+            const isSelected = activeSuggestion === suggestion;
+            return (
+              <button
+                key={idx}
+                onClick={() => {
+                  setActiveSuggestion(suggestion);
+                  setPromptInput(suggestion);
+                }}
+                className={`px-4 py-2 rounded-full text-xs transition-all shadow-sm ${
+                  isSelected
+                    ? 'bg-[#8b5cf6] text-white font-medium shadow-purple-500/30'
+                    : 'border border-white/10 hover:border-purple-500/50 text-gray-400 hover:text-white bg-black/40 hover:bg-purple-950/20'
+                }`}
+              >
+                {suggestion}
+              </button>
+            );
+          })}
         </div>
 
+      </div>
+
+      {/* YOUR RECENT PROJECTS SECTION - Exact match to screenshot */}
+      <div className="w-full max-w-5xl mx-auto px-6 sm:px-8 pb-16 z-10 relative">
+        
+        {/* Section Header with Purple Vertical Indicator */}
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="w-1 h-5 bg-[#8b5cf6] rounded-full" />
+          <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight font-sans">
+            Your Recent Projects
+          </h3>
+        </div>
+
+        {/* Projects Container (Dashed border box matching screenshot) */}
+        {recentProjects.length === 0 ? (
+          <div className="w-full border border-dashed border-white/10 rounded-2xl py-12 px-6 flex items-center justify-center bg-black/20">
+            <p className="text-gray-500 text-sm font-normal">
+              No recent projects found.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recentProjects.map((proj, idx) => (
+              <div 
+                key={idx}
+                onClick={() => navigate('/dashboard')}
+                className="bg-[#0f0f18] border border-white/10 hover:border-purple-500/40 rounded-2xl p-4 transition-all cursor-pointer group hover:bg-[#141322]"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                    <Folder className="w-4 h-4" />
+                  </div>
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                    proj.status === 'ACTIVE' 
+                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                      : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
+                  }`}>
+                    {proj.status}
+                  </span>
+                </div>
+                <h4 className="text-white font-semibold text-sm group-hover:text-purple-300 transition-colors truncate">
+                  {proj.name}
+                </h4>
+                <p className="text-gray-400 text-xs mt-1 font-mono">
+                  {proj.objective}
+                </p>
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5 text-xs text-gray-400">
+                  <span>Meta ID: {proj.id?.slice(-6)}</span>
+                  <span className="text-purple-400 group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                    View <ArrowUpRight className="w-3 h-3" />
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Background glow effects */}
