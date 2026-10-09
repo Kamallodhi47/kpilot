@@ -325,7 +325,7 @@ export default function Pixeo() {
           {/* Main Creative Canvas Area */}
           <div className="flex-1 flex flex-col p-4 sm:p-6 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
             
-            {/* Top Canvas Banner: [ GUIDED ] Creator mode | Setting up ... [ Change format ] */}
+            {/* Top Canvas Banner: [ GUIDED ] New creative | Pick a format in the chat */}
             <div className="w-full bg-[#11111e] border border-white/10 rounded-2xl p-3 sm:p-3.5 flex items-center justify-between mb-6 shadow-md">
               <div className="flex items-center gap-3">
                 <span className="px-2 py-0.5 rounded-md border border-white/20 text-[10px] font-bold text-gray-300 font-mono tracking-wider">
@@ -333,20 +333,13 @@ export default function Pixeo() {
                 </span>
                 <div className="flex flex-col">
                   <span className="text-xs sm:text-sm font-bold text-white leading-tight">
-                    {selectedFormat}
+                    {selectedFormat || 'New creative'}
                   </span>
                   <span className="text-[11px] text-gray-400">
-                    {generatedImages.length > 0 ? `${generatedImages.length} creatives generated` : 'Setting up'}
+                    {selectedFormat === 'New creative' ? 'Pick a format in the chat' : (generatedImages.length > 0 ? `${generatedImages.length} creatives generated` : 'Setting up')}
                   </span>
                 </div>
               </div>
-
-              <button
-                onClick={() => setIsFormatModalOpen(true)}
-                className="px-3.5 py-1.5 rounded-full bg-black/40 hover:bg-white/10 border border-white/20 text-xs text-white font-medium transition-all cursor-pointer"
-              >
-                Change format
-              </button>
             </div>
 
             {/* Empty State vs Generated Creatives Grid */}
@@ -355,8 +348,10 @@ export default function Pixeo() {
                 <h3 className="text-lg sm:text-xl font-bold text-white">
                   No images generated yet
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-400 mt-1 max-w-md">
-                  Images generated in this session will appear here.
+                <p className="text-xs sm:text-sm text-gray-400 mt-1 max-w-md flex items-center gap-1.5 flex-wrap">
+                  <span>Images generated in this</span>
+                  <span className="bg-[#5b3af6] text-white px-1.5 py-0.5 rounded text-xs font-medium">session</span>
+                  <span>will appear here.</span>
                 </p>
 
                 {/* Quick action buttons to start */}
@@ -524,7 +519,7 @@ export default function Pixeo() {
                 </div>
               </div>
 
-              {/* 2. PICK A FORMAT Interactive Component matching media_1791560494682.png */}
+              {/* 2. PICK A FORMAT Interactive Component matching media_1791560494682.png, media_1791560823875.png, media_1791560850096.png */}
               <div className="w-full bg-[#141420] border border-white/10 rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3.5">
                 
                 {/* Header Tag */}
@@ -534,13 +529,13 @@ export default function Pixeo() {
                   </span>
                 </div>
 
-                {/* Sub-tabs: [ Image ]  Video  Edit */}
-                <div className="inline-flex items-center p-1 rounded-full bg-black/40 border border-white/10">
+                {/* Sub-tabs: [ Image ]  [ Video ]  [ Edit ] */}
+                <div className="inline-flex items-center p-1 rounded-full bg-black/40 border border-white/10 gap-1">
                   <button
                     onClick={() => setSelectedSubTab('image')}
                     className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                       selectedSubTab === 'image'
-                        ? 'bg-white/10 border border-white/20 text-white shadow-sm'
+                        ? 'border border-white/40 bg-white/10 text-white shadow-sm'
                         : 'text-gray-400 hover:text-white'
                     }`}
                   >
@@ -550,7 +545,7 @@ export default function Pixeo() {
                     onClick={() => setSelectedSubTab('video')}
                     className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                       selectedSubTab === 'video'
-                        ? 'bg-white/10 border border-white/20 text-white shadow-sm'
+                        ? 'border border-white/40 bg-white/10 text-white shadow-sm'
                         : 'text-gray-400 hover:text-white'
                     }`}
                   >
@@ -560,7 +555,7 @@ export default function Pixeo() {
                     onClick={() => setSelectedSubTab('edit')}
                     className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                       selectedSubTab === 'edit'
-                        ? 'bg-white/10 border border-white/20 text-white shadow-sm'
+                        ? 'border border-white/40 bg-white/10 text-white shadow-sm'
                         : 'text-gray-400 hover:text-white'
                     }`}
                   >
@@ -568,74 +563,210 @@ export default function Pixeo() {
                   </button>
                 </div>
 
-                {/* 2x2 Grid of Formats */}
-                <div className="grid grid-cols-2 gap-2.5">
-                  
-                  {/* Option 1: Product photoshoot */}
-                  <div
-                    onClick={() => {
-                      setSelectedFormat('Product photoshoot');
-                      setChatInput('Product photoshoot for Organic Whey Isolate');
-                    }}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
-                      selectedFormat === 'Product photoshoot'
-                        ? 'border-white/50 bg-white/5 ring-1 ring-white/20'
-                        : 'border-white/10 bg-black/30 hover:border-white/20'
-                    }`}
-                  >
-                    <span className="text-xs font-bold text-white leading-tight">Product photoshoot</span>
-                    <span className="text-[10px] text-gray-400 leading-tight mt-1">Your product, relit and restaged</span>
-                  </div>
+                {/* FORMAT TILES ACCORDING TO ACTIVE SUBTAB */}
+                {selectedSubTab === 'image' && (
+                  <div className="grid grid-cols-2 gap-2.5 animate-in fade-in duration-200">
+                    {/* Option 1: Product photoshoot */}
+                    <div
+                      onClick={() => {
+                        setSelectedFormat('Product photoshoot');
+                        setChatInput('Product photoshoot for Organic Whey Isolate');
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
+                        selectedFormat === 'Product photoshoot'
+                          ? 'border-white/60 bg-white/10 ring-1 ring-white/30'
+                          : 'border-white/10 bg-black/30 hover:border-white/20'
+                      }`}
+                    >
+                      <span className="text-xs font-bold text-white leading-tight">Product photoshoot</span>
+                      <span className="text-[10px] text-gray-400 leading-tight mt-1">Your product, relit and restaged</span>
+                    </div>
 
-                  {/* Option 2: From a description */}
-                  <div
-                    onClick={() => {
-                      setSelectedFormat('From a description');
-                      setChatInput('Generate visual from description: ');
-                    }}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
-                      selectedFormat === 'From a description'
-                        ? 'border-white/50 bg-white/5 ring-1 ring-white/20'
-                        : 'border-white/10 bg-black/30 hover:border-white/20'
-                    }`}
-                  >
-                    <span className="text-xs font-bold text-white leading-tight">From a description</span>
-                    <span className="text-[10px] text-gray-400 leading-tight mt-1">Generated from your brief</span>
-                  </div>
+                    {/* Option 2: From a description */}
+                    <div
+                      onClick={() => {
+                        setSelectedFormat('From a description');
+                        setChatInput('Generate visual from description: ');
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
+                        selectedFormat === 'From a description'
+                          ? 'border-white/60 bg-white/10 ring-1 ring-white/30'
+                          : 'border-white/10 bg-black/30 hover:border-white/20'
+                      }`}
+                    >
+                      <span className="text-xs font-bold text-white leading-tight">From a description</span>
+                      <span className="text-[10px] text-gray-400 leading-tight mt-1">Generated from your brief</span>
+                    </div>
 
-                  {/* Option 3: Carousel */}
-                  <div
-                    onClick={() => {
-                      setSelectedFormat('Carousel');
-                      setChatInput('Create 3-card carousel ad set for high conversion');
-                    }}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
-                      selectedFormat === 'Carousel'
-                        ? 'border-white/50 bg-white/5 ring-1 ring-white/20'
-                        : 'border-white/10 bg-black/30 hover:border-white/20'
-                    }`}
-                  >
-                    <span className="text-xs font-bold text-white leading-tight">Carousel</span>
-                    <span className="text-[10px] text-gray-400 leading-tight mt-1">A sequence of cards, one story</span>
-                  </div>
+                    {/* Option 3: Carousel */}
+                    <div
+                      onClick={() => {
+                        setSelectedFormat('Carousel');
+                        setChatInput('Create 3-card carousel ad set for high conversion');
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
+                        selectedFormat === 'Carousel'
+                          ? 'border-white/60 bg-white/10 ring-1 ring-white/30'
+                          : 'border-white/10 bg-black/30 hover:border-white/20'
+                      }`}
+                    >
+                      <span className="text-xs font-bold text-white leading-tight">Carousel</span>
+                      <span className="text-[10px] text-gray-400 leading-tight mt-1">A sequence of cards, one story</span>
+                    </div>
 
-                  {/* Option 4: Creator mode */}
-                  <div
-                    onClick={() => {
-                      setSelectedFormat('Creator mode');
-                      setChatInput('Write creator UGC script and create video ad');
-                    }}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
-                      selectedFormat === 'Creator mode'
-                        ? 'border-white/50 bg-white/5 ring-1 ring-white/20'
-                        : 'border-white/10 bg-black/30 hover:border-white/20'
-                    }`}
-                  >
-                    <span className="text-xs font-bold text-white leading-tight">Creator mode</span>
-                    <span className="text-[10px] text-gray-400 leading-tight mt-1">Write the script, then create it</span>
+                    {/* Option 4: Creator mode */}
+                    <div
+                      onClick={() => {
+                        setSelectedFormat('Creator mode');
+                        setChatInput('Write creator UGC script and create video ad');
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
+                        selectedFormat === 'Creator mode'
+                          ? 'border-white/60 bg-white/10 ring-1 ring-white/30'
+                          : 'border-white/10 bg-black/30 hover:border-white/20'
+                      }`}
+                    >
+                      <span className="text-xs font-bold text-white leading-tight">Creator mode</span>
+                      <span className="text-[10px] text-gray-400 leading-tight mt-1">Write the script, then create it</span>
+                    </div>
                   </div>
+                )}
 
-                </div>
+                {selectedSubTab === 'video' && (
+                  <div className="grid grid-cols-2 gap-2.5 animate-in fade-in duration-200">
+                    {/* Option 1: Creator / UGC */}
+                    <div
+                      onClick={() => {
+                        setSelectedFormat('Creator / UGC');
+                        setChatInput('Creator UGC script with phone-shot style actor talking to camera');
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
+                        selectedFormat === 'Creator / UGC'
+                          ? 'border-white/60 bg-white/10 ring-1 ring-white/30'
+                          : 'border-white/10 bg-black/30 hover:border-white/20'
+                      }`}
+                    >
+                      <span className="text-xs font-bold text-white leading-tight">Creator / UGC</span>
+                      <span className="text-[10px] text-gray-400 leading-tight mt-1">A person talks to camera, in a phone-shot style</span>
+                    </div>
+
+                    {/* Option 2: Animate a still */}
+                    <div
+                      onClick={() => {
+                        setSelectedFormat('Animate a still');
+                        setChatInput('Animate this artwork with dynamic motion lighting');
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
+                        selectedFormat === 'Animate a still'
+                          ? 'border-white/60 bg-white/10 ring-1 ring-white/30'
+                          : 'border-white/10 bg-black/30 hover:border-white/20'
+                      }`}
+                    >
+                      <span className="text-xs font-bold text-white leading-tight">Animate a still</span>
+                      <span className="text-[10px] text-gray-400 leading-tight mt-1">Adds motion to this artwork only</span>
+                    </div>
+
+                    {/* Option 3: New angles */}
+                    <div
+                      onClick={() => {
+                        setSelectedFormat('New angles');
+                        setChatInput('Generate 360-degree new angles and perspective views of product');
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
+                        selectedFormat === 'New angles'
+                          ? 'border-white/60 bg-white/10 ring-1 ring-white/30'
+                          : 'border-white/10 bg-black/30 hover:border-white/20'
+                      }`}
+                    >
+                      <span className="text-xs font-bold text-white leading-tight">New angles</span>
+                      <span className="text-[10px] text-gray-400 leading-tight mt-1">Additional views of the same product</span>
+                    </div>
+
+                    {/* Option 4: Feature highlight */}
+                    <div
+                      onClick={() => {
+                        setSelectedFormat('Feature highlight');
+                        setChatInput('Highlight 3 key product features with callout labels');
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
+                        selectedFormat === 'Feature highlight'
+                          ? 'border-white/60 bg-white/10 ring-1 ring-white/30'
+                          : 'border-white/10 bg-black/30 hover:border-white/20'
+                      }`}
+                    >
+                      <span className="text-xs font-bold text-white leading-tight">Feature highlight</span>
+                      <span className="text-[10px] text-gray-400 leading-tight mt-1">Demonstrates one feature</span>
+                    </div>
+
+                    {/* Option 5: Product showcase */}
+                    <div
+                      onClick={() => {
+                        setSelectedFormat('Product showcase');
+                        setChatInput('Cinematic 4K product commercial film');
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
+                        selectedFormat === 'Product showcase'
+                          ? 'border-white/60 bg-white/10 ring-1 ring-white/30'
+                          : 'border-white/10 bg-black/30 hover:border-white/20'
+                      }`}
+                    >
+                      <span className="text-xs font-bold text-white leading-tight">Product showcase</span>
+                      <span className="text-[10px] text-gray-400 leading-tight mt-1">Cinematic product film</span>
+                    </div>
+
+                    {/* Option 6: Offer / promo */}
+                    <div
+                      onClick={() => {
+                        setSelectedFormat('Offer / promo');
+                        setChatInput('Create urgency 24-hour flash sale offer video ad');
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
+                        selectedFormat === 'Offer / promo'
+                          ? 'border-white/60 bg-white/10 ring-1 ring-white/30'
+                          : 'border-white/10 bg-black/30 hover:border-white/20'
+                      }`}
+                    >
+                      <span className="text-xs font-bold text-white leading-tight">Offer / promo</span>
+                      <span className="text-[10px] text-gray-400 leading-tight mt-1">A time-limited offer</span>
+                    </div>
+                  </div>
+                )}
+
+                {selectedSubTab === 'edit' && (
+                  <div className="grid grid-cols-2 gap-2.5 animate-in fade-in duration-200">
+                    {/* Option 1: Edit an image */}
+                    <div
+                      onClick={() => {
+                        setSelectedFormat('Edit an image');
+                        setChatInput('Edit uploaded product image: change background and lighting');
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
+                        selectedFormat === 'Edit an image'
+                          ? 'border-white/60 bg-white/10 ring-1 ring-white/30'
+                          : 'border-white/10 bg-black/30 hover:border-white/20'
+                      }`}
+                    >
+                      <span className="text-xs font-bold text-white leading-tight">Edit an image</span>
+                      <span className="text-[10px] text-gray-400 leading-tight mt-1">Change an existing image</span>
+                    </div>
+
+                    {/* Option 2: Resize / aspect */}
+                    <div
+                      onClick={() => {
+                        setSelectedFormat('Resize / aspect');
+                        setChatInput('Rebuild layout across 1:1 Feed, 9:16 Story, and 16:9 Landscape');
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
+                        selectedFormat === 'Resize / aspect'
+                          ? 'border-white/60 bg-white/10 ring-1 ring-white/30'
+                          : 'border-white/10 bg-black/30 hover:border-white/20'
+                      }`}
+                    >
+                      <span className="text-xs font-bold text-white leading-tight">Resize / aspect</span>
+                      <span className="text-[10px] text-gray-400 leading-tight mt-1">Rebuild layout for each placement</span>
+                    </div>
+                  </div>
+                )}
 
               </div>
 
