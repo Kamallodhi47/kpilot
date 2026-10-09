@@ -36,15 +36,22 @@ export default function Login() {
       }
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.detail || 'Authentication failed');
+        let errMsg = 'Authentication failed';
+        try {
+          const errData = await res.json();
+          errMsg = errData.detail || errData.message || errMsg;
+        } catch {
+          const rawText = await res.text();
+          errMsg = rawText || errMsg;
+        }
+        throw new Error(errMsg);
       }
 
       const data = await res.json();
       localStorage.setItem('token', data.access_token);
       navigate('/onboarding');
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
