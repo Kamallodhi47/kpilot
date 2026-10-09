@@ -18,6 +18,8 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/home" element={<Home />} />
           <Route path="/build" element={<CampaignBuilder />} />
+          <Route path="/xeno" element={<CampaignBuilder />} />
+          <Route path="/campulse" element={<Dashboard defaultTab="campaigns" />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/optimise" element={<Dashboard defaultTab="recommendation" />} />
           <Route path="/recommendation" element={<Dashboard defaultTab="recommendation" />} />

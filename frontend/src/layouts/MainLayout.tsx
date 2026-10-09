@@ -1,12 +1,23 @@
+import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Megaphone, Gauge, Lightbulb, Image as ImageIcon, Bot, Box, Menu } from 'lucide-react';
+import { Home, Megaphone, Gauge, Lightbulb, Image as ImageIcon, Bot, Box, Menu, ChevronDown } from 'lucide-react';
 
 export default function MainLayout() {
   const location = useLocation();
+  const [isLaunchCampaignOpen, setIsLaunchCampaignOpen] = useState(true);
 
   const navigation = [
     { name: 'Home', href: '/home', icon: Home },
-    { name: 'Launch Campaign', href: '/build', icon: Megaphone },
+    { 
+      name: 'Launch Campaign', 
+      href: '/build', 
+      icon: Megaphone,
+      hasChildren: true,
+      children: [
+        { name: 'Xeno', href: '/build', alias: '/xeno' },
+        { name: 'Campulse', href: '/campulse', alias: '/campulse' },
+      ]
+    },
     { name: 'Dashboard', href: '/dashboard', icon: Gauge },
     { name: 'Optimise', href: '/optimise', icon: Lightbulb },
     { name: 'Pixeo', href: '/pixeo', icon: ImageIcon },
@@ -32,9 +43,67 @@ export default function MainLayout() {
         </div>
 
         {/* Navigation */}
-        <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden px-3">
-          <nav className="flex-1 space-y-3">
+        <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden px-3 scrollbar-none">
+          <nav className="flex-1 space-y-2.5">
             {navigation.map((item) => {
+              if (item.hasChildren && item.children) {
+                const isParentActive = location.pathname.startsWith('/build') || location.pathname.startsWith('/xeno') || location.pathname.startsWith('/campulse');
+
+                return (
+                  <div key={item.name} className="flex flex-col">
+                    {/* Parent item */}
+                    <div
+                      onClick={() => setIsLaunchCampaignOpen(!isLaunchCampaignOpen)}
+                      className={`
+                        flex items-center justify-between py-3 px-3.5 font-semibold rounded-xl transition-all whitespace-nowrap cursor-pointer
+                        ${isParentActive 
+                          ? 'bg-[#7c3aed] text-white shadow-lg shadow-purple-500/20' 
+                          : 'text-white hover:bg-white/5'}
+                      `}
+                    >
+                      <div className="flex items-center">
+                        <item.icon
+                          className={`flex-shrink-0 h-[22px] w-[22px] transition-transform ${isParentActive ? 'text-white' : 'text-gray-300'}`}
+                          strokeWidth={isParentActive ? 2.5 : 2}
+                        />
+                        <span className="ml-4 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75">
+                          {item.name}
+                        </span>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-300 ${isLaunchCampaignOpen ? 'rotate-180' : ''}`} />
+                    </div>
+
+                    {/* Tree Dropdown Children (Matching screenshot tree connector style) */}
+                    {isLaunchCampaignOpen && (
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 pl-6 mt-1.5 space-y-1 relative before:absolute before:left-5 before:top-0 before:bottom-3 before:w-[1.5px] before:bg-white/20">
+                        {item.children.map((child) => {
+                          const isChildActive = location.pathname === child.href || (child.alias && location.pathname === child.alias);
+                          
+                          return (
+                            <Link
+                              key={child.name}
+                              to={child.href}
+                              className="flex items-center relative py-1 text-sm group/child whitespace-nowrap pl-3"
+                            >
+                              {/* Horizontal connector branch */}
+                              <span className={`absolute -left-1 w-3 h-[1.5px] ${isChildActive ? 'bg-[#7c3aed]' : 'bg-white/20'}`} />
+                              
+                              <div className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition-all w-full ${
+                                isChildActive 
+                                  ? 'bg-[#7c3aed] text-white shadow-md shadow-purple-500/20' 
+                                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                              }`}>
+                                {child.name}
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
               const isActive = item.href === '/home' ? location.pathname === '/home' : location.pathname.startsWith(item.href);
 
               return (
@@ -75,7 +144,7 @@ export default function MainLayout() {
         </div>
         
         <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none">
-          <div className={location.pathname === "/build" ? "h-full w-full" : "p-4 sm:p-6 md:p-8 h-full"}>
+          <div className={location.pathname === "/build" || location.pathname === "/xeno" ? "h-full w-full" : "p-4 sm:p-6 md:p-8 h-full"}>
             <Outlet />
           </div>
         </main>
