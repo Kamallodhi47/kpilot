@@ -287,7 +287,7 @@ export default function Home() {
       </div>
 
       {/* YOUR RECENT PROJECTS SECTION - Exact match to screenshot */}
-      <div className="w-full max-w-5xl mx-auto px-6 sm:px-8 pb-10 z-10 relative">
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-8 pb-10 z-10 relative">
         
         {/* Section Header with Purple Vertical Indicator */}
         <div className="flex items-center gap-2.5 mb-4">
@@ -343,7 +343,7 @@ export default function Home() {
       </div>
 
       {/* WHAT'S NEW AT NYX? SECTION - Exact match to screenshot */}
-      <div className="w-full max-w-5xl mx-auto px-6 sm:px-8 pb-16 z-10 relative">
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-8 pb-16 z-10 relative">
         {/* Section Header with Purple Vertical Indicator */}
         <div className="flex items-center gap-2.5 mb-4">
           <div className="w-1 h-5 bg-[#8b5cf6] rounded-full" />
@@ -356,42 +356,48 @@ export default function Home() {
         <div className="bg-[#12111d] border border-white/10 hover:border-purple-500/30 rounded-3xl p-6 sm:p-8 lg:p-10 flex flex-col lg:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden group transition-all">
           
           {/* Left Text Content */}
-          <div className="flex-1 z-10">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-purple-400 block mb-2 font-mono">
+          <div className="flex-1 z-10 max-w-xl">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-purple-400 block mb-3 font-mono">
               PIXEO
             </span>
-            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight mb-3">
+            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight mb-3 font-sans">
               Create scroll-stopping ad creatives
             </h3>
-            <p className="text-gray-400 text-sm sm:text-[15px] leading-relaxed max-w-xl mb-6 font-normal">
+            <p className="text-gray-400 text-sm sm:text-base leading-relaxed mb-6 font-normal">
               Describe what you need and Pixeo generates on-brand ad images in minutes — ready to launch across every channel.
             </p>
-            <button
-              onClick={() => navigate('/processing')}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-[#7c3aed] to-[#6366f1] hover:from-[#6d28d9] hover:to-[#4f46e5] text-white px-6 py-2.5 rounded-full text-sm font-semibold shadow-lg shadow-purple-600/30 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-            >
-              <span>Try It Now</span>
-              <span className="text-base font-bold">→</span>
-            </button>
+            <div className="relative inline-block group/btn">
+              {/* Button Ambient Purple Glow */}
+              <div className="absolute -inset-1 rounded-full bg-purple-600/40 blur-md opacity-70 group-hover/btn:opacity-100 transition-opacity" />
+              <button
+                onClick={() => navigate('/processing')}
+                className="relative inline-flex items-center gap-2 bg-[#17152b] hover:bg-[#201d3a] border border-purple-500/50 text-white px-7 py-2.5 rounded-full text-sm font-semibold transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-inner"
+              >
+                <span>Try It Now</span>
+                <span className="text-base font-bold text-purple-300">→</span>
+              </button>
+            </div>
           </div>
 
-          {/* Right Visual Holographic AI Brain Image */}
-          <div className="w-full lg:w-[420px] shrink-0 z-10 relative">
-            <div className="relative rounded-2xl overflow-hidden border border-purple-500/30 shadow-2xl aspect-[16/10] bg-[#070710] flex items-center justify-center group-hover:border-purple-500/50 transition-all">
+          {/* Right Visual Robot on Bench Image */}
+          <div className="w-full lg:w-[460px] shrink-0 z-10 relative">
+            <div className="relative rounded-2xl overflow-hidden border border-purple-500/20 shadow-2xl aspect-[16/10] bg-[#070710] flex items-center justify-center group-hover:border-purple-500/40 transition-all">
               <img 
-                src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=800&auto=format&fit=crop" 
-                alt="PIXEO AI Brain Engine" 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90"
+                src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=800&auto=format&fit=crop" 
+                alt="PIXEO AI Robot Ad Creative" 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 brightness-95"
               />
-              {/* Neon Ambient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-purple-950/60 via-transparent to-black/20" />
-              <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-purple-400/30 text-[11px] text-purple-300 font-mono">
+              {/* Subtle Vignette Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 pointer-events-none" />
+              
+              {/* Badge: AI Creative V3 */}
+              <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full border border-purple-400/40 text-[11px] text-purple-300 font-mono shadow-md">
                 <Sparkles className="w-3 h-3 text-purple-400" /> AI Creative V3
               </div>
             </div>
           </div>
 
-          {/* Ambient Glow */}
+          {/* Background Ambient Glow */}
           <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-purple-600/10 rounded-full blur-[100px] pointer-events-none" />
         </div>
       </div>
