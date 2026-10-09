@@ -31,6 +31,7 @@ export default function Pixeo() {
   const [activeBottomTab, setActiveBottomTab] = useState<'campaign' | 'pixeo' | 'analytics'>('pixeo');
   const [isFormatModalOpen, setIsFormatModalOpen] = useState(false);
   const [selectedFormat, setSelectedFormat] = useState('Creator mode');
+  const [selectedSubTab, setSelectedSubTab] = useState<'image' | 'video' | 'edit'>('image');
   
   // Chat & AI Generation State
   const [isPixeoPanelOpen, setIsPixeoPanelOpen] = useState(true);
@@ -514,7 +515,131 @@ export default function Pixeo() {
             </div>
 
             {/* Chat Conversation Canvas (Dot Grid Matrix Background) */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3.5 scrollbar-thin scrollbar-thumb-white/10 relative bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:16px_16px]">
+            <div className="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-3.5 scrollbar-thin scrollbar-thumb-white/10 relative bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:16px_16px]">
+              
+              {/* 1. Pixeo Question Bubble */}
+              <div className="flex flex-col items-start">
+                <div className="w-full rounded-2xl p-4 text-xs sm:text-sm leading-relaxed bg-[#131322] text-gray-200 border border-white/10 shadow-sm">
+                  What are we making? Pick a format, or just describe it.
+                </div>
+              </div>
+
+              {/* 2. PICK A FORMAT Interactive Component matching media_1791560494682.png */}
+              <div className="w-full bg-[#141420] border border-white/10 rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3.5">
+                
+                {/* Header Tag */}
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] sm:text-[11px] font-bold tracking-widest text-gray-300 uppercase font-mono">
+                    PICK A FORMAT
+                  </span>
+                </div>
+
+                {/* Sub-tabs: [ Image ]  Video  Edit */}
+                <div className="inline-flex items-center p-1 rounded-full bg-black/40 border border-white/10">
+                  <button
+                    onClick={() => setSelectedSubTab('image')}
+                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                      selectedSubTab === 'image'
+                        ? 'bg-white/10 border border-white/20 text-white shadow-sm'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Image
+                  </button>
+                  <button
+                    onClick={() => setSelectedSubTab('video')}
+                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                      selectedSubTab === 'video'
+                        ? 'bg-white/10 border border-white/20 text-white shadow-sm'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Video
+                  </button>
+                  <button
+                    onClick={() => setSelectedSubTab('edit')}
+                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                      selectedSubTab === 'edit'
+                        ? 'bg-white/10 border border-white/20 text-white shadow-sm'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Edit
+                  </button>
+                </div>
+
+                {/* 2x2 Grid of Formats */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  
+                  {/* Option 1: Product photoshoot */}
+                  <div
+                    onClick={() => {
+                      setSelectedFormat('Product photoshoot');
+                      setChatInput('Product photoshoot for Organic Whey Isolate');
+                    }}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
+                      selectedFormat === 'Product photoshoot'
+                        ? 'border-white/50 bg-white/5 ring-1 ring-white/20'
+                        : 'border-white/10 bg-black/30 hover:border-white/20'
+                    }`}
+                  >
+                    <span className="text-xs font-bold text-white leading-tight">Product photoshoot</span>
+                    <span className="text-[10px] text-gray-400 leading-tight mt-1">Your product, relit and restaged</span>
+                  </div>
+
+                  {/* Option 2: From a description */}
+                  <div
+                    onClick={() => {
+                      setSelectedFormat('From a description');
+                      setChatInput('Generate visual from description: ');
+                    }}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
+                      selectedFormat === 'From a description'
+                        ? 'border-white/50 bg-white/5 ring-1 ring-white/20'
+                        : 'border-white/10 bg-black/30 hover:border-white/20'
+                    }`}
+                  >
+                    <span className="text-xs font-bold text-white leading-tight">From a description</span>
+                    <span className="text-[10px] text-gray-400 leading-tight mt-1">Generated from your brief</span>
+                  </div>
+
+                  {/* Option 3: Carousel */}
+                  <div
+                    onClick={() => {
+                      setSelectedFormat('Carousel');
+                      setChatInput('Create 3-card carousel ad set for high conversion');
+                    }}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
+                      selectedFormat === 'Carousel'
+                        ? 'border-white/50 bg-white/5 ring-1 ring-white/20'
+                        : 'border-white/10 bg-black/30 hover:border-white/20'
+                    }`}
+                  >
+                    <span className="text-xs font-bold text-white leading-tight">Carousel</span>
+                    <span className="text-[10px] text-gray-400 leading-tight mt-1">A sequence of cards, one story</span>
+                  </div>
+
+                  {/* Option 4: Creator mode */}
+                  <div
+                    onClick={() => {
+                      setSelectedFormat('Creator mode');
+                      setChatInput('Write creator UGC script and create video ad');
+                    }}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[78px] ${
+                      selectedFormat === 'Creator mode'
+                        ? 'border-white/50 bg-white/5 ring-1 ring-white/20'
+                        : 'border-white/10 bg-black/30 hover:border-white/20'
+                    }`}
+                  >
+                    <span className="text-xs font-bold text-white leading-tight">Creator mode</span>
+                    <span className="text-[10px] text-gray-400 leading-tight mt-1">Write the script, then create it</span>
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* Dynamic Chat Messages (if any sent) */}
               {messages.map((msg) => {
                 if (msg.type === 'badge') {
                   return (
@@ -542,7 +667,6 @@ export default function Pixeo() {
                   );
                 }
 
-                // Regular message bubble
                 return (
                   <div
                     key={msg.id}
@@ -556,17 +680,6 @@ export default function Pixeo() {
                       }`}
                     >
                       <p className="whitespace-pre-line">{msg.text}</p>
-                      
-                      {msg.actionButton && (
-                        <div className="mt-3">
-                          <button
-                            onClick={() => setIsFormatModalOpen(true)}
-                            className="px-3.5 py-1.5 rounded-full bg-black/40 hover:bg-white/10 border border-white/20 text-xs text-white font-medium transition-all cursor-pointer"
-                          >
-                            {msg.actionButton}
-                          </button>
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
@@ -582,37 +695,43 @@ export default function Pixeo() {
               <div ref={chatBottomRef} />
             </div>
 
-            {/* Chat Input Container */}
-            <div className="p-3 bg-[#0b0b14] border-t border-white/5 shrink-0">
-              <form onSubmit={handleSendMessage} className="bg-[#12121f] border border-white/10 rounded-2xl p-2.5 focus-within:border-purple-500 transition-all">
-                <textarea
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage(e);
-                    }
-                  }}
-                  rows={2}
-                  placeholder="Describe what you want, or paste a link"
-                  className="w-full bg-transparent text-xs text-white placeholder-gray-500 focus:outline-none resize-none px-1"
-                />
+            {/* Chat Input Container matching media_1791560494682.png */}
+            <div className="p-3 bg-[#090912] border-t border-white/5 shrink-0">
+              
+              {/* Grab Handle */}
+              <div className="w-8 h-1 bg-white/20 rounded-full mx-auto mb-2.5"></div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                  <div className="flex items-center gap-1.5 text-gray-400">
+              <form onSubmit={handleSendMessage} className="space-y-2.5">
+                <div className="bg-[#0e0d19] border border-white/10 rounded-2xl p-3 focus-within:border-purple-500 transition-all">
+                  <textarea
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage(e);
+                      }
+                    }}
+                    rows={2}
+                    placeholder="Describe what you want to make"
+                    className="w-full bg-transparent text-xs text-white placeholder-gray-500 focus:outline-none resize-none px-1"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => {
                         if (fileInputRef.current) fileInputRef.current.click();
                       }}
-                      className="p-1.5 rounded-lg hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                      className="w-9 h-9 rounded-xl bg-[#141324] hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
                     >
                       <Paperclip className="w-4 h-4" />
                     </button>
                     <button
                       type="button"
-                      className="p-1.5 rounded-lg hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                      className="w-9 h-9 rounded-xl bg-[#7c3aed] hover:bg-[#6d28d9] text-white flex items-center justify-center shadow-lg shadow-purple-600/30 transition-colors cursor-pointer"
                     >
                       <Volume2 className="w-4 h-4" />
                     </button>
@@ -621,9 +740,9 @@ export default function Pixeo() {
                   <button
                     type="submit"
                     disabled={!chatInput.trim()}
-                    className="w-8 h-8 rounded-full bg-[#7c3aed] hover:bg-[#6d28d9] disabled:opacity-40 disabled:hover:bg-[#7c3aed] text-white flex items-center justify-center shadow-md shadow-purple-600/30 transition-all cursor-pointer"
+                    className="w-9 h-9 rounded-xl bg-[#7c3aed] hover:bg-[#6d28d9] disabled:opacity-40 text-white flex items-center justify-center shadow-lg shadow-purple-600/30 transition-all cursor-pointer"
                   >
-                    <Send className="w-3.5 h-3.5" />
+                    <Send className="w-4 h-4" />
                   </button>
                 </div>
               </form>
