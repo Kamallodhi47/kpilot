@@ -294,29 +294,29 @@ export default function CampaignBuilder() {
   ];
 
   return (
-    <div className="h-full w-full flex bg-[#07070b] text-white overflow-hidden p-2.5 sm:p-3 gap-3 font-sans select-none">
+    <div className="h-full w-full flex bg-slate-100 dark:bg-[#07070b] text-slate-900 dark:text-white overflow-hidden p-2.5 sm:p-3 gap-3 font-sans select-none">
       
       {/* ================= LEFT / CENTER WORKSPACE CONTAINER ================= */}
-      <div className="flex-1 bg-[#090912] border border-white/10 rounded-2xl sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl relative">
+      <div className="flex-1 bg-white dark:bg-[#090912] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl relative">
         
         {/* SUBHEADER: Campaign Workspace & Controls */}
-        <div className="h-14 flex items-center justify-between px-5 bg-[#0b0b14] border-b border-white/5 shrink-0 z-10">
+        <div className="h-14 flex items-center justify-between px-5 bg-slate-50 dark:bg-[#0b0b14] border-b border-gray-200 dark:border-white/5 shrink-0 z-10">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-300">
+            <div className="w-8 h-8 rounded-lg bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center text-slate-700 dark:text-gray-300 shadow-sm">
               <Columns className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm sm:text-base font-bold text-white tracking-tight leading-tight">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
                 Campaign Workspace
               </h2>
-              <p className="text-[11px] text-gray-400 font-mono">project-2481</p>
+              <p className="text-[11px] text-slate-500 dark:text-gray-400 font-mono">project-2481</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center bg-[#12111d] border border-white/10 rounded-xl px-3.5 py-1.5 text-xs text-gray-300 cursor-pointer hover:border-white/20">
+            <div className="flex items-center bg-white dark:bg-[#12111d] border border-gray-200 dark:border-white/10 rounded-xl px-3.5 py-1.5 text-xs text-slate-700 dark:text-gray-300 cursor-pointer hover:border-purple-400 shadow-sm">
               <span>{liveCampaigns.length > 0 ? `${liveCampaigns.length} campaigns active` : 'No campaigns yet.'}</span>
-              <ChevronDown className="w-3.5 h-3.5 ml-2 text-gray-500" />
+              <ChevronDown className="w-3.5 h-3.5 ml-2 text-slate-400 dark:text-gray-500" />
             </div>
 
             <button
@@ -324,7 +324,7 @@ export default function CampaignBuilder() {
                 setIsDraftStarted(true);
                 setCurrentStep(1);
               }}
-              className="px-4 py-1.5 rounded-full border border-white/10 bg-transparent hover:bg-white/5 text-white text-xs font-semibold transition-all cursor-pointer"
+              className="px-4 py-1.5 rounded-full border border-gray-300 dark:border-white/10 bg-white dark:bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 text-slate-800 dark:text-white text-xs font-semibold transition-all cursor-pointer shadow-sm"
             >
               New campaign
             </button>
@@ -334,11 +334,11 @@ export default function CampaignBuilder() {
         {/* WORKSPACE MAIN BODY: STEPPER + CANVAS */}
         <div className="flex-1 flex overflow-hidden">
           
-          {/* STEPPER WORKFLOW TIMELINE (EXACT MATCH TO SCREENSHOT) */}
-          <div className="w-[270px] sm:w-[285px] lg:w-[300px] border-r border-white/5 p-3 sm:p-3.5 flex flex-col justify-between shrink-0 relative overflow-hidden bg-[#080810]">
+          {/* STEPPER WORKFLOW TIMELINE */}
+          <div className="w-[270px] sm:w-[285px] lg:w-[300px] border-r border-gray-200 dark:border-white/5 p-3 sm:p-3.5 flex flex-col justify-between shrink-0 relative overflow-hidden bg-slate-50 dark:bg-[#080810]">
             
             {/* Continuous Vertical Connector Line */}
-            <div className="absolute left-[30px] top-[26px] bottom-[28px] w-[1.5px] bg-white/15 pointer-events-none z-0" />
+            <div className="absolute left-[30px] top-[26px] bottom-[28px] w-[1.5px] bg-slate-300 dark:bg-white/15 pointer-events-none z-0" />
 
             <div className="flex flex-col justify-between h-full space-y-2 relative z-10">
               {workflowSteps.map((step) => {
@@ -351,8 +351,8 @@ export default function CampaignBuilder() {
                     className={`
                       p-3 rounded-2xl border transition-all cursor-pointer relative group flex flex-col justify-between
                       ${isActive 
-                        ? 'bg-[#151226] border-[#8b5cf6] shadow-[0_0_15px_rgba(139,92,246,0.2)] ring-1 ring-[#8b5cf6]/40' 
-                        : 'bg-[#0e0e18] border-white/10 hover:border-white/20'
+                        ? 'bg-purple-50/80 dark:bg-[#151226] border-purple-500 shadow-md shadow-purple-500/15 ring-1 ring-purple-500/40' 
+                        : 'bg-white dark:bg-[#0e0e18] border-gray-200 dark:border-white/10 hover:border-purple-300 dark:hover:border-white/20'
                       }
                     `}
                   >
@@ -361,16 +361,16 @@ export default function CampaignBuilder() {
                         
                         {/* Step Icon */}
                         {step.id === 1 && isActive ? (
-                          <div className="w-8 h-8 rounded-full bg-[#201538] border border-purple-500/50 flex items-center justify-center relative shrink-0 shadow-[0_0_8px_rgba(168,85,247,0.3)]">
-                            <div className="w-6 h-6 rounded-full border border-purple-400/40 flex items-center justify-center">
-                              <div className="w-2 h-2 rounded-full bg-[#c084fc] shadow-[0_0_6px_#c084fc]" />
+                          <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-[#201538] border border-purple-400 dark:border-purple-500/50 flex items-center justify-center relative shrink-0 shadow-sm">
+                            <div className="w-6 h-6 rounded-full border border-purple-400/60 flex items-center justify-center">
+                              <div className="w-2 h-2 rounded-full bg-purple-600 dark:bg-[#c084fc] shadow-sm" />
                             </div>
                           </div>
                         ) : (
                           <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
                             isActive 
                               ? 'bg-[#7c3aed] text-white shadow-md shadow-purple-500/30' 
-                              : 'bg-[#151522] text-gray-400 border border-white/15 group-hover:border-white/30'
+                              : 'bg-slate-100 dark:bg-[#151522] text-slate-700 dark:text-gray-400 border border-gray-200 dark:border-white/15'
                           }`}>
                             {step.id}
                           </div>
@@ -378,12 +378,16 @@ export default function CampaignBuilder() {
 
                         <div>
                           <h4 className={`text-xs sm:text-[13px] font-bold tracking-tight leading-tight ${
-                            isActive ? 'text-[#e9d5ff]' : 'text-[#cbd5e1]'
+                            isActive 
+                              ? 'text-purple-950 dark:text-[#e9d5ff]' 
+                              : 'text-slate-800 dark:text-[#cbd5e1]'
                           }`}>
                             {step.title}
                           </h4>
-                          <p className={`text-[11px] mt-0.5 leading-snug ${
-                            isActive ? 'text-[#c084fc]' : 'text-[#64748b]'
+                          <p className={`text-[11px] mt-0.5 leading-snug font-medium ${
+                            isActive 
+                              ? 'text-purple-700 dark:text-[#c084fc]' 
+                              : 'text-slate-500 dark:text-[#64748b]'
                           }`}>
                             {step.subtitle}
                           </p>
@@ -391,15 +395,15 @@ export default function CampaignBuilder() {
                       </div>
 
                       {isActive && (
-                        <span className="w-2 h-2 rounded-full bg-[#a855f7] shadow-[0_0_6px_#a855f7] shrink-0 mt-1" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-purple-600 dark:bg-[#a855f7] shadow-[0_0_6px_rgba(168,85,247,0.8)] shrink-0 mt-1" />
                       )}
                     </div>
 
                     {isActive && (
-                      <div className="mt-2 pt-1 flex items-center gap-1 text-[10px] font-bold tracking-wider font-mono text-[#c084fc]">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#c084fc] animate-pulse" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#a855f7] animate-pulse delay-75" />
-                        <span className="ml-0.5">{step.statusTag}</span>
+                      <div className="mt-2 pt-1 flex items-center gap-1.5 text-[10px] font-bold tracking-wider font-mono text-purple-700 dark:text-[#c084fc]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-purple-600 dark:bg-[#c084fc] animate-pulse" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400 dark:bg-[#a855f7] animate-pulse delay-75" />
+                        <span className="ml-0.5 uppercase">{step.statusTag}</span>
                       </div>
                     )}
                   </div>
@@ -409,7 +413,7 @@ export default function CampaignBuilder() {
           </div>
 
           {/* CANVAS AREA */}
-          <div className="flex-1 flex flex-col overflow-y-auto p-5 sm:p-6 bg-[#0b0b14] scrollbar-thin scrollbar-thumb-white/10">
+          <div className="flex-1 flex flex-col overflow-y-auto p-5 sm:p-6 bg-slate-50/50 dark:bg-[#0b0b14] scrollbar-thin">
             
             {/* LAUNCH READINESS CARD */}
             <div className="w-full bg-[#0d0d17] border border-white/10 rounded-2xl p-6 mb-5 shadow-xl">
