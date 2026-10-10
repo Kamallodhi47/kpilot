@@ -16,6 +16,7 @@ interface AssetFile {
   size?: string;
   date: string;
   dimensions?: string;
+  folder?: string;
 }
 
 export default function Assets() {
@@ -29,7 +30,7 @@ export default function Assets() {
   // View & Filter States
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentFolder, setCurrentFolder] = useState<string | null>(null);
+  const [currentFolder, setCurrentFolder] = useState<string | null>('kaal');
   
   // Modals & Upload State
   const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
@@ -37,8 +38,27 @@ export default function Assets() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Asset Items List
-  const [assets, setAssets] = useState<AssetFile[]>([]);
+  // Initial Folders & Assets
+  const [assets, setAssets] = useState<AssetFile[]>([
+    {
+      id: 'folder-1',
+      name: 'kaal',
+      type: 'folder',
+      date: 'Updated today'
+    },
+    {
+      id: 'folder-2',
+      name: 'Whey Protein Creatives',
+      type: 'folder',
+      date: 'Updated 2 days ago'
+    },
+    {
+      id: 'folder-3',
+      name: 'Summer Campaign 2026',
+      type: 'folder',
+      date: 'Updated last week'
+    }
+  ]);
 
   // Fetch logged in user profile
   useEffect(() => {
@@ -65,7 +85,8 @@ export default function Assets() {
         url: URL.createObjectURL(file),
         size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
         date: 'Just now',
-        dimensions: '1080 x 1080'
+        dimensions: '1080 x 1080',
+        folder: currentFolder || undefined
       }));
 
       setAssets(prev => [...newItems, ...prev]);
@@ -86,70 +107,123 @@ export default function Assets() {
     setAssets(prev => [newFolder, ...prev]);
     setNewFolderName('');
     setIsNewFolderModalOpen(false);
+    setCurrentFolder(newFolder.name);
   };
 
-  const filteredAssets = assets.filter(item => 
+  // Filter assets depending on whether we are at root or inside a specific folder
+  const currentAssets = assets.filter(item => {
+    if (currentFolder) {
+      return item.folder === currentFolder;
+    }
+    return !item.folder;
+  });
+
+  const filteredAssets = currentAssets.filter(item => 
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="flex flex-col min-h-screen bg-[#07070c] text-white p-5 sm:p-8 relative font-sans select-none">
       
-      {/* ================= TOP HEADER ================= */}
-      <div className="flex items-start justify-between pb-5 border-b border-white/5">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Assets</h1>
-          <p className="text-xs sm:text-sm text-gray-400 mt-1">
-            Explore the creations by everyone in this workspace here
-          </p>
+      {/* ================= TOP HEADER (DYNAMIC BASED ON ROOT OR INSIDE FOLDER) ================= */}
+      <div className="flex items-center justify-between pb-5 border-b border-white/5">
+        
+        {currentFolder ? (
+          /* When Inside Folder (matching screenshot media_1791611318307.png) */
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-bold tracking-wider text-gray-300 uppercase font-mono">
+              RECENT
+            </span>
+            <div className="px-3.5 py-1 rounded-full bg-[#161528] border border-white/10 text-white text-xs font-medium flex items-center gap-2 shadow-sm">
+              <Folder className="w-3.5 h-3.5 text-purple-400 fill-purple-400/20" />
+              <span>{currentFolder}</span>
+            </div>
+          </div>
+        ) : (
+          /* When at Root Assets Directory */
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Assets</h1>
+            <p className="text-xs sm:text-sm text-gray-400 mt-1">
+              Explore the creations by everyone in this workspace here
+            </p>
+          </div>
+        )}
+
+        {/* Top Right Actions */}
+        <div className="flex items-center gap-3">
+          {currentFolder ? (
+            /* Upload & New Folder buttons in header when inside folder */
+            <div className="flex items-center gap-2.5">
+              <button
+                onClick={() => {
+                  if (fileInputRef.current) fileInputRef.current.click();
+                }}
+                className="px-4 py-1.5 rounded-full bg-[#131322] hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+              >
+                <Upload className="w-3.5 h-3.5 text-gray-300" />
+                <span>Upload</span>
+              </button>
+
+              <button
+                onClick={() => setIsNewFolderModalOpen(true)}
+                className="px-4 py-1.5 rounded-full bg-[#131322] hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+              >
+                <FolderPlus className="w-3.5 h-3.5 text-gray-300" />
+                <span>New Folder</span>
+              </button>
+            </div>
+          ) : (
+            /* Theme Switcher & Avatar at Root */
+            <div className="flex items-center gap-3.5">
+              <button className="w-10 h-6 rounded-full bg-[#161626] border border-white/10 flex items-center px-1 text-gray-400 hover:text-white transition-colors cursor-pointer">
+                <Moon className="w-3.5 h-3.5 text-gray-300" />
+              </button>
+              <div className="w-8 h-8 rounded-full bg-[#ea580c] flex items-center justify-center text-white text-xs font-bold shadow-md shadow-orange-600/30">
+                {userInitial}
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center gap-3.5">
-          {/* Theme Switcher */}
-          <button className="w-10 h-6 rounded-full bg-[#161626] border border-white/10 flex items-center px-1 text-gray-400 hover:text-white transition-colors cursor-pointer">
-            <Moon className="w-3.5 h-3.5 text-gray-300" />
+      </div>
+
+      {/* Hidden File Input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileUpload}
+        multiple
+        accept="image/*,video/*"
+        className="hidden"
+      />
+
+      {/* ================= ACTION BUTTONS (WHEN AT ROOT) ================= */}
+      {!currentFolder && (
+        <div className="flex items-center justify-end gap-3 pt-5 pb-4">
+          <button
+            onClick={() => {
+              if (fileInputRef.current) fileInputRef.current.click();
+            }}
+            className="px-4 py-2 rounded-full bg-[#131322] hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+          >
+            <Upload className="w-3.5 h-3.5 text-gray-300" />
+            <span>Upload</span>
           </button>
 
-          {/* User Avatar Circle */}
-          <div className="w-8 h-8 rounded-full bg-[#ea580c] flex items-center justify-center text-white text-xs font-bold shadow-md shadow-orange-600/30">
-            {userInitial}
-          </div>
+          <button
+            onClick={() => setIsNewFolderModalOpen(true)}
+            className="px-4 py-2 rounded-full bg-[#131322] hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+          >
+            <FolderPlus className="w-3.5 h-3.5 text-gray-300" />
+            <span>New Folder</span>
+          </button>
         </div>
-      </div>
-
-      {/* ================= ACTION BUTTONS (UPLOAD / NEW FOLDER) ================= */}
-      <div className="flex items-center justify-end gap-3 pt-5 pb-4">
-        <button
-          onClick={() => {
-            if (fileInputRef.current) fileInputRef.current.click();
-          }}
-          className="px-4 py-2 rounded-full bg-[#131322] hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-all shadow-sm flex items-center gap-2 cursor-pointer"
-        >
-          <Upload className="w-3.5 h-3.5 text-gray-300" />
-          <span>Upload</span>
-        </button>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileUpload}
-          multiple
-          accept="image/*,video/*"
-          className="hidden"
-        />
-
-        <button
-          onClick={() => setIsNewFolderModalOpen(true)}
-          className="px-4 py-2 rounded-full bg-[#131322] hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-all shadow-sm flex items-center gap-2 cursor-pointer"
-        >
-          <FolderPlus className="w-3.5 h-3.5 text-gray-300" />
-          <span>New Folder</span>
-        </button>
-      </div>
+      )}
 
       {/* ================= BREADCRUMBS & TOOLBAR ================= */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-3 border-t border-white/5">
         
-        {/* Breadcrumb row */}
+        {/* Breadcrumb row matching "Assets > kaal" */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => setCurrentFolder(null)}
@@ -157,12 +231,17 @@ export default function Assets() {
           >
             Back
           </button>
-          <div className="flex items-center gap-1.5 text-xs font-medium text-white">
-            <span className="text-white">Assets</span>
+          <div className="flex items-center gap-2 text-xs font-medium">
+            <button
+              onClick={() => setCurrentFolder(null)}
+              className="text-gray-300 hover:text-white cursor-pointer"
+            >
+              Assets
+            </button>
             {currentFolder && (
               <>
-                <ChevronRight className="w-3 h-3 text-gray-500" />
-                <span className="text-purple-400">{currentFolder}</span>
+                <span className="text-gray-500 font-bold">&gt;</span>
+                <span className="text-white font-semibold">{currentFolder}</span>
               </>
             )}
           </div>
