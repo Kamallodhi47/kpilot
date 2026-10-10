@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Mic, Send, Star, Moon, Target, Image as ImageIcon, BarChart2, Lightbulb, LogOut, User as UserIcon, Sparkles, Folder, ArrowUpRight, ExternalLink } from 'lucide-react';
+import { Mic, Send, Star, Moon, Sun, Target, Image as ImageIcon, BarChart2, Lightbulb, LogOut, User as UserIcon, Sparkles, Folder, ArrowUpRight, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Home() {
+  const { theme, toggleTheme } = useTheme();
   const [userName, setUserName] = useState('User');
   const [userInitial, setUserInitial] = useState('U');
   const [userEmail, setUserEmail] = useState('');
@@ -118,8 +120,12 @@ export default function Home() {
           </button>
 
           <div className="flex items-center bg-white/5 rounded-full p-1 border border-white/10">
-            <button className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-colors" title="Theme">
-              <Moon className="w-4 h-4" />
+            <button
+              onClick={toggleTheme}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-colors cursor-pointer"
+              title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+            >
+              {theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-amber-500" />}
             </button>
           </div>
 

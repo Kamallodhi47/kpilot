@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Play, Settings, Image as ImageIcon, CheckCircle2, Circle, MessageSquare, 
-  Mic, Send, Paperclip, Moon, BarChart2, Sparkles, ExternalLink, Globe, 
+  Mic, Send, Paperclip, Moon, Sun, BarChart2, Sparkles, ExternalLink, Globe, 
   ShieldCheck, RefreshCw, AlertCircle, ArrowRight, Zap, Target, Volume2, 
   Folder, Layers, Radio, Check, ChevronDown, Maximize2, X, FileText, ChevronRight,
   Columns
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 
 interface AdAccount {
   id: string;
@@ -25,6 +26,7 @@ interface CampaignData {
 }
 
 export default function CampaignBuilder() {
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
 

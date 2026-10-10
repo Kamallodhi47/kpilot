@@ -411,3 +411,123 @@
   transform: translateY(-6px) scale(1.02) !important;
 }
 
+/* ================= GLOBAL LIGHT THEME STYLING ================= */
+html.light-theme,
+body.light-theme,
+.light-theme {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+.light-theme .bg-black,
+.light-theme .bg-\[\#07070b\],
+.light-theme .bg-\[\#07070c\],
+.light-theme .bg-\[\#07070d\],
+.light-theme .bg-\[\#07070e\],
+.light-theme .bg-\[\#090912\],
+.light-theme .bg-\[\#0a0a12\],
+.light-theme .bg-\[\#0b0b14\],
+.light-theme .bg-\[\#0d0d16\],
+.light-theme .bg-\[\#0d0d17\],
+.light-theme .bg-\[\#0e0d19\],
+.light-theme .bg-\[\#0f0f13\],
+.light-theme .bg-\[\#100f1c\],
+.light-theme .bg-\[\#111020\],
+.light-theme .bg-\[\#11111e\],
+.light-theme .bg-\[\#12111d\],
+.light-theme .bg-\[\#121122\],
+.light-theme .bg-\[\#12121f\],
+.light-theme .bg-\[\#131222\],
+.light-theme .bg-\[\#131320\],
+.light-theme .bg-\[\#131322\],
+.light-theme .bg-\[\#141324\],
+.light-theme .bg-\[\#141420\],
+.light-theme .bg-\[\#141422\],
+.light-theme .bg-\[\#161528\],
+.light-theme .bg-\[\#161626\],
+.light-theme .bg-\[\#181628\],
+.light-theme .bg-\[\#1a192c\],
+.light-theme .bg-\[\#1e153a\] {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.light-theme main,
+.light-theme aside,
+.light-theme header {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+.light-theme .text-white {
+  color: #0f172a !important;
+}
+
+.light-theme .text-gray-200,
+.light-theme .text-gray-300 {
+  color: #334155 !important;
+}
+
+.light-theme .text-gray-400,
+.light-theme .text-gray-500 {
+  color: #64748b !important;
+}
+
+.light-theme .border-white\/5,
+.light-theme .border-white\/10,
+.light-theme .border-white\/15,
+.light-theme .border-white\/20,
+.light-theme .border-white\/30,
+.light-theme .border-white\/40,
+.light-theme .border-white\/50,
+.light-theme .border-white\/60 {
+  border-color: #e2e8f0 !important;
+}
+
+.light-theme input,
+.light-theme textarea,
+.light-theme select {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light-theme input::placeholder,
+.light-theme textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+.light-theme .bg-white\/5,
+.light-theme .bg-white\/10 {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+.light-theme .bg-black\/30,
+.light-theme .bg-black\/40,
+.light-theme .bg-black\/50,
+.light-theme .bg-black\/60,
+.light-theme .bg-black\/70,
+.light-theme .bg-black\/80 {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+.light-theme .bg-\[\#581c87\],
+.light-theme .bg-\[\#5b3af6\],
+.light-theme .bg-\[\#7c3aed\],
+.light-theme .bg-purple-600,
+.light-theme .bg-indigo-600 {
+  background-color: #7c3aed !important;
+  color: #ffffff !important;
+}
+
+.light-theme .bg-\[\#581c87\] *,
+.light-theme .bg-\[\#5b3af6\] *,
+.light-theme .bg-\[\#7c3aed\] *,
+.light-theme .bg-purple-600 *,
+.light-theme .bg-indigo-600 * {
+  color: #ffffff !important;
+}
+
+

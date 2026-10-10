@@ -6,6 +6,7 @@ import {
   Sliders, Maximize2, CheckCircle2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 
 interface GeneratedImage {
   id: string;
@@ -18,6 +19,7 @@ interface GeneratedImage {
 
 export default function Pixeo() {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   // User Profile
   const [userName, setUserName] = useState('User');
@@ -205,8 +207,12 @@ export default function Pixeo() {
 
         <div className="flex items-center gap-3.5">
           {/* Theme Switcher Pill */}
-          <button className="w-10 h-6 rounded-full bg-[#161626] border border-white/10 flex items-center px-1 text-gray-400 hover:text-white transition-colors cursor-pointer">
-            <Moon className="w-3.5 h-3.5 text-gray-300" />
+          <button 
+            onClick={toggleTheme}
+            className="w-10 h-6 rounded-full bg-[#161626] border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors cursor-pointer"
+            title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+          >
+            {theme === 'dark' ? <Moon className="w-3.5 h-3.5 text-gray-300" /> : <Sun className="w-3.5 h-3.5 text-amber-500" />}
           </button>
 
           {/* User Initial Avatar (Exact orange circle matching screenshot) */}

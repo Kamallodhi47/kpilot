@@ -7,6 +7,7 @@ import {
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AIAssistantWidget from '../components/AIAssistantWidget';
+import { useTheme } from '../context/ThemeContext';
 
 interface DashboardProps {
   defaultTab?: string;
@@ -181,12 +182,12 @@ export default function Dashboard({ defaultTab = 'recommendation' }: DashboardPr
         <div className="flex items-center gap-3.5">
           {/* Night Mode Toggle Switch */}
           <button 
-            onClick={() => setIsDarkMode(!isDarkMode)}
+            onClick={toggleTheme}
             className="flex items-center justify-between w-14 h-7 bg-[#1c1c28] border border-white/10 rounded-full p-1 transition-all cursor-pointer hover:border-purple-500/40"
-            title="Toggle Theme"
+            title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
           >
             <div className="w-5 h-5 rounded-full bg-[#0d091a] flex items-center justify-center text-purple-300 shadow-inner">
-              <Moon className="w-3.5 h-3.5" />
+              {theme === 'dark' ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5 text-amber-500" />}
             </div>
           </button>
 
