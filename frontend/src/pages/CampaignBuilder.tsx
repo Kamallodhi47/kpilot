@@ -786,40 +786,48 @@ export default function CampaignBuilder() {
 
           </div>
 
-          {/* Bottom Bar: Tabs (Campaign, Pixeo, Analytics) */}
-          <div className="h-14 border-t border-white/10 bg-[#090912] px-6 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-3">
+          {/* Bottom Bar: Full-width Segmented Switcher (Exact match to screenshot) */}
+          <div className="p-3 border-t border-white/10 bg-[#07070d] shrink-0">
+            <div className="w-full bg-[#0d0d16] border border-white/10 rounded-2xl p-1.5 grid grid-cols-3 gap-1.5 shadow-inner">
+              
+              {/* Tab 1: Campaign */}
               <button
                 onClick={() => setActiveBottomTab('campaign')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                className={`flex flex-col items-center justify-center py-2 sm:py-2.5 rounded-xl text-xs transition-all cursor-pointer ${
                   activeBottomTab === 'campaign'
-                    ? 'bg-[#7c3aed] text-white shadow-lg shadow-purple-600/30'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-[#7c3aed] text-white font-bold shadow-lg shadow-purple-600/40'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5 font-medium'
                 }`}
               >
-                <Play className="w-3.5 h-3.5 fill-current" />
+                <Play className="w-3.5 h-3.5 fill-current mb-0.5" />
                 <span>Campaign</span>
               </button>
 
+              {/* Tab 2: Pixeo */}
               <button
                 onClick={() => navigate('/processing')}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                className={`flex flex-col items-center justify-center py-2 sm:py-2.5 rounded-xl text-xs transition-all cursor-pointer ${
+                  activeBottomTab === 'pixeo'
+                    ? 'bg-[#7c3aed] text-white font-bold shadow-lg shadow-purple-600/40'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5 font-medium'
+                }`}
               >
-                <ImageIcon className="w-3.5 h-3.5" />
+                <ImageIcon className="w-3.5 h-3.5 mb-0.5" />
                 <span>Pixeo</span>
               </button>
 
+              {/* Tab 3: Analytics */}
               <button
                 onClick={() => navigate('/dashboard')}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                className={`flex flex-col items-center justify-center py-2 sm:py-2.5 rounded-xl text-xs transition-all cursor-pointer ${
+                  activeBottomTab === 'analytics'
+                    ? 'bg-[#7c3aed] text-white font-bold shadow-lg shadow-purple-600/40'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5 font-medium'
+                }`}
               >
-                <BarChart2 className="w-3.5 h-3.5" />
+                <BarChart2 className="w-3.5 h-3.5 mb-0.5" />
                 <span>Analytics</span>
               </button>
-            </div>
-
-            <div className="text-xs text-gray-500 font-mono">
-              XENO AI Engine V2.4 Active
             </div>
           </div>
 
