@@ -654,7 +654,7 @@ export default function CampaignBuilder() {
 
             {/* Tab 2: Pixeo */}
             <button
-              onClick={() => navigate('/processing')}
+              onClick={() => navigate('/pixeo')}
               className={`flex flex-col items-center justify-center py-2 rounded-xl text-xs transition-all cursor-pointer ${
                 activeBottomTab === 'pixeo'
                   ? 'bg-[#581c87] text-white font-bold shadow-md shadow-purple-900/40'

@@ -144,7 +144,14 @@ export default function MainLayout() {
         </div>
         
         <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none">
-          <div className={location.pathname === "/build" || location.pathname === "/xeno" ? "h-full w-full" : "p-4 sm:p-6 md:p-8 h-full"}>
+          <div className={
+            location.pathname === "/build" || 
+            location.pathname === "/xeno" || 
+            location.pathname === "/pixeo" || 
+            location.pathname === "/processing" 
+              ? "h-full w-full" 
+              : "p-4 sm:p-6 md:p-8 h-full"
+          }>
             <Outlet />
           </div>
         </main>
