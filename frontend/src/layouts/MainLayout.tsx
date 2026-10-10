@@ -76,13 +76,13 @@ export default function MainLayout() {
                       className={`
                         flex items-center justify-between py-3 px-3.5 font-semibold rounded-xl transition-all whitespace-nowrap cursor-pointer
                         ${isParentActive 
-                          ? 'bg-[#7c3aed] text-white shadow-lg shadow-purple-500/20' 
-                          : 'text-white hover:bg-white/5'}
+                          ? 'nav-item-active bg-[#7c3aed] text-white shadow-lg shadow-purple-500/25' 
+                          : 'text-slate-700 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'}
                       `}
                     >
                       <div className="flex items-center">
                         <item.icon
-                          className={`flex-shrink-0 h-[22px] w-[22px] transition-transform ${isParentActive ? 'text-white' : 'text-gray-300'}`}
+                          className={`flex-shrink-0 h-[22px] w-[22px] transition-transform ${isParentActive ? 'text-white' : 'text-slate-600 dark:text-gray-300'}`}
                           strokeWidth={isParentActive ? 2.5 : 2}
                         />
                         <span className="ml-4 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75">
@@ -94,7 +94,7 @@ export default function MainLayout() {
 
                     {/* Tree Dropdown Children (Matching screenshot tree connector style) */}
                     {isLaunchCampaignOpen && (
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 pl-6 mt-1.5 space-y-1 relative before:absolute before:left-5 before:top-0 before:bottom-3 before:w-[1.5px] before:bg-white/20">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 pl-6 mt-1.5 space-y-1 relative before:absolute before:left-5 before:top-0 before:bottom-3 before:w-[1.5px] before:bg-slate-300 dark:before:bg-white/20">
                         {item.children.map((child) => {
                           const isChildActive = location.pathname === child.href || (child.alias && location.pathname === child.alias);
                           
@@ -105,12 +105,12 @@ export default function MainLayout() {
                               className="flex items-center relative py-1 text-sm group/child whitespace-nowrap pl-3"
                             >
                               {/* Horizontal connector branch */}
-                              <span className={`absolute -left-1 w-3 h-[1.5px] ${isChildActive ? 'bg-[#7c3aed]' : 'bg-white/20'}`} />
+                              <span className={`absolute -left-1 w-3 h-[1.5px] ${isChildActive ? 'bg-[#7c3aed]' : 'bg-slate-300 dark:bg-white/20'}`} />
                               
                               <div className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition-all w-full ${
                                 isChildActive 
-                                  ? 'bg-[#7c3aed] text-white shadow-md shadow-purple-500/20' 
-                                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                  ? 'nav-item-active bg-[#7c3aed] text-white shadow-md shadow-purple-500/25' 
+                                  : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                               }`}>
                                 {child.name}
                               </div>
@@ -132,12 +132,12 @@ export default function MainLayout() {
                   className={`
                     flex items-center py-3 px-3.5 font-semibold rounded-xl transition-all whitespace-nowrap
                     ${isActive 
-                      ? 'bg-[#7c3aed] text-white shadow-lg shadow-purple-500/20' 
-                      : 'text-white hover:bg-white/5'}
+                      ? 'nav-item-active bg-[#7c3aed] text-white shadow-lg shadow-purple-500/25' 
+                      : 'text-slate-700 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'}
                   `}
                 >
                   <item.icon
-                    className={`flex-shrink-0 h-[22px] w-[22px] transition-transform ${isActive ? 'text-white' : 'text-gray-300'}`}
+                    className={`flex-shrink-0 h-[22px] w-[22px] transition-transform ${isActive ? 'text-white' : 'text-slate-600 dark:text-gray-300'}`}
                     strokeWidth={isActive ? 2.5 : 2}
                   />
                   <span className={`ml-4 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75`}>

@@ -522,14 +522,34 @@ body.light-theme,
   box-shadow: 2px 0 12px rgba(15, 23, 42, 0.04) !important;
 }
 
-.light-theme .hidden.md\:flex.bg-black a,
-.light-theme .hidden.md\:flex.bg-black div[onClick] {
+.light-theme .hidden.md\:flex.bg-black a:not(.nav-item-active),
+.light-theme .hidden.md\:flex.bg-black div[onClick]:not(.nav-item-active) {
   color: #334155 !important;
 }
 
-.light-theme .hidden.md\:flex.bg-black a:hover {
+.light-theme .hidden.md\:flex.bg-black a:not(.nav-item-active):hover {
   background-color: #f1f5f9 !important;
   color: #0f172a !important;
+}
+
+/* Active Navigation Item (Vibrant Purple with Crystal Clear White Text) */
+.nav-item-active,
+.light-theme .nav-item-active,
+[data-theme="light"] .nav-item-active,
+[data-theme="dark"] .nav-item-active {
+  background-color: #7c3aed !important;
+  background: #7c3aed !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35) !important;
+}
+
+.nav-item-active *,
+.light-theme .nav-item-active *,
+[data-theme="light"] .nav-item-active *,
+[data-theme="dark"] .nav-item-active * {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  opacity: 1 !important;
 }
 
 /* Tree connector lines in light mode */
