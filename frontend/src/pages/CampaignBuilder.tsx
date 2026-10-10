@@ -391,13 +391,13 @@ export default function CampaignBuilder() {
       {/* 3. MAIN WORKSPACE 3-COLUMN SPLIT */}
       <div className="flex-1 flex overflow-hidden">
         
-        {/* ================= COLUMN 1: LEFT STEPPER WORKFLOW (EXACT MATCH TO SCREENSHOT) ================= */}
-        <div className="w-[320px] sm:w-[350px] lg:w-[370px] bg-[#090910] border-r border-white/5 flex flex-col shrink-0 p-3.5 sm:p-4 relative overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
+        {/* ================= COLUMN 1: LEFT STEPPER WORKFLOW (EXACT FIT TO SCREENSHOT) ================= */}
+        <div className="w-[275px] sm:w-[290px] lg:w-[305px] bg-[#090910] border-r border-white/5 flex flex-col justify-between shrink-0 p-3 relative overflow-hidden">
           
           {/* Continuous Vertical Connector Line running through all step icons */}
-          <div className="absolute left-[38px] sm:left-[40px] top-[32px] bottom-[36px] w-[1.5px] bg-white/15 pointer-events-none z-0" />
+          <div className="absolute left-[30px] top-[26px] bottom-[28px] w-[1.5px] bg-white/15 pointer-events-none z-0" />
 
-          <div className="space-y-3.5 relative z-10">
+          <div className="flex flex-col justify-between h-full space-y-2 relative z-10">
             {workflowSteps.map((step) => {
               const isActive = currentStep === step.id;
 
@@ -406,31 +406,28 @@ export default function CampaignBuilder() {
                   key={step.id}
                   onClick={() => setCurrentStep(step.id)}
                   className={`
-                    p-4 sm:p-5 rounded-[20px] border transition-all cursor-pointer relative group flex flex-col justify-between min-h-[96px]
+                    p-3 rounded-2xl border transition-all cursor-pointer relative group flex flex-col justify-between
                     ${isActive 
-                      ? 'bg-[#151226] border-[#8b5cf6] shadow-[0_0_20px_rgba(139,92,246,0.25)] ring-1 ring-[#8b5cf6]/40' 
+                      ? 'bg-[#151226] border-[#8b5cf6] shadow-[0_0_15px_rgba(139,92,246,0.2)] ring-1 ring-[#8b5cf6]/40' 
                       : 'bg-[#0e0e18] border-white/10 hover:border-white/20'
                     }
                   `}
                 >
                   {/* Main Row */}
-                  <div className="flex items-start justify-between gap-3.5">
-                    <div className="flex items-start gap-3.5">
+                  <div className="flex items-start justify-between gap-2.5">
+                    <div className="flex items-start gap-2.5">
                       
                       {/* Step Icon with exact Concentric Radar for Step 1 */}
                       {step.id === 1 && isActive ? (
-                        <div className="w-10 h-10 rounded-full bg-[#201538] border border-purple-500/50 flex items-center justify-center relative shrink-0 shadow-[0_0_12px_rgba(168,85,247,0.3)]">
+                        <div className="w-8 h-8 rounded-full bg-[#201538] border border-purple-500/50 flex items-center justify-center relative shrink-0 shadow-[0_0_8px_rgba(168,85,247,0.3)]">
                           {/* Outer Ripple */}
-                          <div className="w-8 h-8 rounded-full border border-purple-400/40 flex items-center justify-center">
-                            {/* Middle Ring */}
-                            <div className="w-5 h-5 rounded-full border border-purple-300/60 flex items-center justify-center">
-                              {/* Inner Glowing Core */}
-                              <div className="w-2.5 h-2.5 rounded-full bg-[#c084fc] shadow-[0_0_8px_#c084fc]" />
-                            </div>
+                          <div className="w-6 h-6 rounded-full border border-purple-400/40 flex items-center justify-center">
+                            {/* Inner Glowing Core */}
+                            <div className="w-2 h-2 rounded-full bg-[#c084fc] shadow-[0_0_6px_#c084fc]" />
                           </div>
                         </div>
                       ) : (
-                        <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shrink-0 transition-colors ${
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
                           isActive 
                             ? 'bg-[#7c3aed] text-white shadow-md shadow-purple-500/30' 
                             : 'bg-[#151522] text-gray-400 border border-white/15 group-hover:border-white/30'
@@ -441,12 +438,12 @@ export default function CampaignBuilder() {
 
                       {/* Text Details */}
                       <div>
-                        <h4 className={`text-sm sm:text-[15px] font-bold tracking-tight leading-tight ${
+                        <h4 className={`text-xs sm:text-[13px] font-bold tracking-tight leading-tight ${
                           isActive ? 'text-[#e9d5ff]' : 'text-[#cbd5e1]'
                         }`}>
                           {step.title}
                         </h4>
-                        <p className={`text-xs mt-1 leading-snug ${
+                        <p className={`text-[11px] mt-0.5 leading-snug ${
                           isActive ? 'text-[#c084fc]' : 'text-[#64748b]'
                         }`}>
                           {step.subtitle}
@@ -456,16 +453,16 @@ export default function CampaignBuilder() {
 
                     {/* Far Right Active Purple Dot */}
                     {isActive && (
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#a855f7] shadow-[0_0_8px_#a855f7] shrink-0 mt-1" />
+                      <span className="w-2 h-2 rounded-full bg-[#a855f7] shadow-[0_0_6px_#a855f7] shrink-0 mt-1" />
                     )}
                   </div>
 
                   {/* Status Badge below */}
                   {isActive && (
-                    <div className="mt-3 pt-2 flex items-center gap-1.5 text-[11px] font-bold tracking-wider font-mono text-[#c084fc]">
+                    <div className="mt-2 pt-1 flex items-center gap-1 text-[10px] font-bold tracking-wider font-mono text-[#c084fc]">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#c084fc] animate-pulse" />
                       <span className="w-1.5 h-1.5 rounded-full bg-[#a855f7] animate-pulse delay-75" />
-                      <span className="ml-1">CAPTURING</span>
+                      <span className="ml-0.5">CAPTURING</span>
                     </div>
                   )}
                 </div>
