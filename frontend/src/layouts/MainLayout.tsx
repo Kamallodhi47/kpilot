@@ -148,6 +148,8 @@ export default function MainLayout() {
             location.pathname === "/build" || 
             location.pathname === "/xeno" || 
             location.pathname === "/pixeo" || 
+            location.pathname === "/neo" || 
+            location.pathname === "/analytics" || 
             location.pathname === "/processing" 
               ? "h-full w-full" 
               : "p-4 sm:p-6 md:p-8 h-full"

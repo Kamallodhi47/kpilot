@@ -667,7 +667,7 @@ export default function CampaignBuilder() {
 
             {/* Tab 3: Analytics */}
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/neo')}
               className={`flex flex-col items-center justify-center py-2 rounded-xl text-xs transition-all cursor-pointer ${
                 activeBottomTab === 'analytics'
                   ? 'bg-[#581c87] text-white font-bold shadow-md shadow-purple-900/40'
