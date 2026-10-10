@@ -409,61 +409,80 @@ export default function CampaignBuilder() {
           {/* CANVAS AREA */}
           <div className="flex-1 flex flex-col overflow-y-auto p-5 sm:p-6 bg-[#0b0b14] scrollbar-thin scrollbar-thumb-white/10">
             
-            {/* Top Connect Ad Accounts Pill */}
-            <div className="mb-6">
-              <div className="bg-[#12111d] border border-white/5 rounded-2xl p-4 flex items-center justify-between">
+            {/* LAUNCH READINESS CARD */}
+            <div className="w-full bg-[#0d0d17] border border-white/10 rounded-2xl p-6 mb-5 shadow-xl">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-bold tracking-widest text-[#818cf8] uppercase font-mono">
+                  LAUNCH READINESS
+                </span>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/40 border border-white/20 text-xs text-gray-200 font-medium">
+                  <span className={`w-2 h-2 rounded-full ${isMetaConnected ? 'bg-emerald-400' : 'bg-gray-400'}`}></span>
+                  <span>{isMetaConnected ? 'Connected' : 'Unknown'}</span>
+                </div>
+              </div>
+
+              <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                Are you ready to launch your campaign?
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-400 mt-1 mb-5">
+                {isMetaConnected 
+                  ? `Active account: ${accountName || 'Vansh Jaat'} (${selectedAdAccount || 'act_1441161704572702'}). Ready to launch!` 
+                  : "We couldn't check your ad accounts right now."}
+              </p>
+
+              <div>
                 <button
                   onClick={fetchStatus}
-                  className="px-5 py-2 rounded-full bg-[#7c3aed] hover:bg-[#6d28d9] text-white text-xs font-bold shadow-lg shadow-purple-600/30 transition-all cursor-pointer"
+                  className="px-5 py-2.5 rounded-full bg-[#5b3af6] hover:bg-[#4f2ee8] text-white text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer inline-flex items-center gap-2"
                 >
                   Connect ad accounts
                 </button>
-
-                {isMetaConnected && (
-                  <span className="text-xs text-gray-400 font-medium">
-                    Active: <strong className="text-purple-300 font-mono">{accountName || 'Vansh Jaat'}</strong> ({selectedAdAccount || 'act_1441161704572702'})
-                  </span>
-                )}
               </div>
             </div>
 
-            {/* If Draft Not Started: Exact Draft Card matching screenshot */}
+            {/* DRAFT NOT STARTED YET CARD (DASHED CONTAINER) */}
             {!isDraftStarted && currentStep === 1 ? (
-              <div className="w-full bg-[#0d0d16] border border-dashed border-purple-500/20 rounded-2xl p-8 text-left shadow-2xl relative overflow-hidden group my-auto">
-                <div className="flex items-start gap-3.5 mb-3">
-                  <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shrink-0">
-                    <FileText className="w-4 h-4" />
+              <div className="w-full border border-dashed border-white/20 rounded-2xl p-6 text-left shadow-lg bg-transparent">
+                <div className="flex items-start gap-4">
+                  {/* Left Circle Icon */}
+                  <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 shrink-0 mt-0.5">
+                    <svg className="w-4 h-4 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                      <path d="m3.3 7 8.7 5 8.7-5"/>
+                      <path d="M12 22V12"/>
+                    </svg>
                   </div>
-                  <div>
-                    <span className="text-[10px] font-bold tracking-widest text-purple-400 uppercase font-mono">
+
+                  {/* Text Details & Buttons */}
+                  <div className="flex-1">
+                    <span className="text-[11px] font-bold tracking-widest text-[#818cf8] uppercase font-mono">
                       NEW CAMPAIGN
                     </span>
-                    <h3 className="text-lg sm:text-xl font-bold text-white mt-0.5">
+                    <h3 className="text-xl font-bold text-white mt-0.5">
                       Draft not started yet
                     </h3>
+                    <p className="text-xs sm:text-sm text-gray-400 mt-1 leading-relaxed max-w-xl">
+                      Start a fresh campaign from chat or pick an existing project from the project list.
+                    </p>
+
+                    <div className="flex items-center gap-2.5 mt-5">
+                      <button
+                        onClick={() => {
+                          setIsDraftStarted(true);
+                          setCurrentStep(1);
+                        }}
+                        className="px-4 py-1.5 rounded-full bg-black/40 hover:bg-white/10 border border-white/20 text-white text-xs font-medium transition-all cursor-pointer shadow-sm"
+                      >
+                        Open chat
+                      </button>
+                      <button
+                        onClick={() => navigate('/dashboard')}
+                        className="px-4 py-1.5 rounded-full bg-black/40 hover:bg-white/10 border border-white/20 text-gray-200 hover:text-white text-xs font-medium transition-all cursor-pointer shadow-sm"
+                      >
+                        Projects
+                      </button>
+                    </div>
                   </div>
-                </div>
-
-                <p className="text-gray-400 text-xs sm:text-sm leading-relaxed mb-6">
-                  Start a fresh campaign from chat or pick an existing project from the project list.
-                </p>
-
-                <div className="flex items-center gap-2.5">
-                  <button
-                    onClick={() => {
-                      setIsDraftStarted(true);
-                      setCurrentStep(1);
-                    }}
-                    className="px-4 py-1.5 rounded-full bg-[#181628] hover:bg-[#201d36] border border-white/10 text-white text-xs font-medium transition-all shadow-sm"
-                  >
-                    Open chat
-                  </button>
-                  <button
-                    onClick={() => navigate('/dashboard')}
-                    className="px-4 py-1.5 rounded-full bg-[#181628] hover:bg-[#201d36] border border-white/10 text-gray-300 hover:text-white text-xs font-medium transition-all"
-                  >
-                    Projects
-                  </button>
                 </div>
               </div>
             ) : (
