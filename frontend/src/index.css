@@ -428,6 +428,31 @@ body.light-theme,
   text-rendering: optimizeLegibility;
 }
 
+/* KPilot Brand Logo Badge (Protected across Light & Dark Themes) */
+.kpilot-logo-badge,
+.light-theme .kpilot-logo-badge,
+[data-theme="light"] .kpilot-logo-badge,
+[data-theme="dark"] .kpilot-logo-badge {
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #f97316 100%) !important;
+  background-color: #a855f7 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4) !important;
+}
+
+.kpilot-logo-badge span,
+.kpilot-logo-badge svg,
+.light-theme .kpilot-logo-badge span,
+.light-theme .kpilot-logo-badge svg,
+[data-theme="light"] .kpilot-logo-badge span,
+[data-theme="light"] .kpilot-logo-badge svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  stroke: none !important;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
 /* All dark surfaces turn into clean white / soft slate cards */
 .light-theme .bg-black,
 .light-theme .bg-\[\#07070a\],
