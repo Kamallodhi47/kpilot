@@ -78,8 +78,14 @@
     --ring: 224.3 76.3% 48%;
 }
 
-
-  /* body styles removed */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
 
 /* Glassmorphism utilities */
 .glass {
@@ -411,14 +417,18 @@
   transform: translateY(-6px) scale(1.02) !important;
 }
 
-/* ================= GLOBAL LIGHT THEME STYLING ================= */
+/* ================= GLOBAL LIGHT THEME STYLING (PRO HIGH CONTRAST & CLEAN) ================= */
 html.light-theme,
 body.light-theme,
 .light-theme {
   background-color: #f8fafc !important;
   color: #0f172a !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
+/* All dark surfaces turn into clean white / soft slate cards */
 .light-theme .bg-black,
 .light-theme .bg-\[\#07070a\],
 .light-theme .bg-\[\#07070b\],
@@ -471,6 +481,7 @@ body.light-theme,
   color: #0f172a !important;
 }
 
+/* Main background containers */
 .light-theme main,
 .light-theme aside,
 .light-theme header,
@@ -479,10 +490,49 @@ body.light-theme,
   color: #0f172a !important;
 }
 
+/* Clean sidebar styling in light mode */
+.light-theme .hidden.md\:flex.bg-black {
+  background-color: #ffffff !important;
+  border-right: 1px solid #e2e8f0 !important;
+  box-shadow: 2px 0 12px rgba(15, 23, 42, 0.04) !important;
+}
+
+.light-theme .hidden.md\:flex.bg-black a,
+.light-theme .hidden.md\:flex.bg-black div[onClick] {
+  color: #334155 !important;
+}
+
+.light-theme .hidden.md\:flex.bg-black a:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+/* Tree connector lines in light mode */
+.light-theme .before\:bg-white\/20::before {
+  background-color: #cbd5e1 !important;
+}
+
+/* Headings and Typography Hierarchy */
+.light-theme h1,
+.light-theme h2,
+.light-theme h3,
+.light-theme h4,
+.light-theme h5,
+.light-theme h6 {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.light-theme p {
+  color: #334155;
+}
+
 .light-theme .text-white {
   color: #0f172a !important;
 }
 
+.light-theme .text-gray-100,
 .light-theme .text-gray-200,
 .light-theme .text-gray-300 {
   color: #334155 !important;
@@ -493,6 +543,11 @@ body.light-theme,
   color: #64748b !important;
 }
 
+.light-theme .text-gray-600 {
+  color: #475569 !important;
+}
+
+/* Crisp 1px Slate Borders */
 .light-theme .border-white\/5,
 .light-theme .border-white\/10,
 .light-theme .border-white\/15,
@@ -500,27 +555,44 @@ body.light-theme,
 .light-theme .border-white\/30,
 .light-theme .border-white\/40,
 .light-theme .border-white\/50,
-.light-theme .border-white\/60 {
+.light-theme .border-white\/60,
+.light-theme .border-gray-800,
+.light-theme .border-gray-900 {
   border-color: #e2e8f0 !important;
 }
 
+/* Interactive Input, Textarea & Select Fields */
 .light-theme input,
 .light-theme textarea,
 .light-theme select {
-  background-color: #f1f5f9 !important;
+  background-color: #ffffff !important;
   color: #0f172a !important;
-  border-color: #cbd5e1 !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04) !important;
+  font-weight: 500 !important;
 }
 
 .light-theme input::placeholder,
 .light-theme textarea::placeholder {
   color: #94a3b8 !important;
+  font-weight: 400 !important;
 }
 
+.light-theme input:focus,
+.light-theme textarea:focus,
+.light-theme select:focus {
+  border-color: #7c3aed !important;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15) !important;
+  outline: none !important;
+}
+
+/* Soft Cards and Containers */
 .light-theme .bg-white\/5,
 .light-theme .bg-white\/10 {
-  background-color: #f1f5f9 !important;
+  background-color: #ffffff !important;
   color: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.03) !important;
 }
 
 .light-theme .bg-black\/20,
@@ -530,10 +602,12 @@ body.light-theme,
 .light-theme .bg-black\/60,
 .light-theme .bg-black\/70,
 .light-theme .bg-black\/80 {
-  background-color: #f1f5f9 !important;
+  background-color: #f8fafc !important;
   color: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
 }
 
+/* Primary Vibrant Brand Buttons */
 .light-theme .bg-\[\#581c87\],
 .light-theme .bg-\[\#5b3af6\],
 .light-theme .bg-\[\#7c3aed\],
@@ -543,8 +617,20 @@ body.light-theme,
 .light-theme .bg-indigo-700 {
   background-color: #7c3aed !important;
   color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25) !important;
 }
 
+.light-theme .bg-\[\#581c87\]:hover,
+.light-theme .bg-\[\#5b3af6\]:hover,
+.light-theme .bg-\[\#7c3aed\]:hover,
+.light-theme .bg-purple-600:hover,
+.light-theme .bg-purple-700:hover,
+.light-theme .bg-indigo-600:hover {
+  background-color: #6d28d9 !important;
+  color: #ffffff !important;
+}
+
+/* Ensure text and icons inside colored buttons stay white */
 .light-theme .bg-\[\#581c87\] *,
 .light-theme .bg-\[\#5b3af6\] *,
 .light-theme .bg-\[\#7c3aed\] *,
@@ -559,5 +645,131 @@ body.light-theme,
 .light-theme .bg-gradient-to-br * {
   color: #ffffff !important;
 }
+
+/* High Contrast Colored Status Badges & Pills */
+.light-theme .text-emerald-400,
+.light-theme .text-emerald-300,
+.light-theme .text-green-400 {
+  color: #059669 !important;
+}
+
+.light-theme .text-rose-400,
+.light-theme .text-rose-500,
+.light-theme .text-red-400 {
+  color: #e11d48 !important;
+}
+
+.light-theme .text-yellow-400,
+.light-theme .text-amber-400 {
+  color: #d97706 !important;
+}
+
+.light-theme .text-purple-400,
+.light-theme .text-purple-300 {
+  color: #7c3aed !important;
+}
+
+.light-theme .text-blue-400,
+.light-theme .text-blue-300 {
+  color: #2563eb !important;
+}
+
+.light-theme .bg-emerald-500\/10,
+.light-theme .bg-emerald-500\/20 {
+  background-color: #ecfdf5 !important;
+  border: 1px solid #a7f3d0 !important;
+  color: #065f46 !important;
+}
+
+.light-theme .bg-purple-500\/10,
+.light-theme .bg-purple-500\/20 {
+  background-color: #f5f3ff !important;
+  border: 1px solid #ddd6fe !important;
+  color: #6d28d9 !important;
+}
+
+.light-theme .bg-blue-500\/10,
+.light-theme .bg-blue-500\/20 {
+  background-color: #eff6ff !important;
+  border: 1px solid #bfdbfe !important;
+  color: #1d4ed8 !important;
+}
+
+.light-theme .bg-pink-500\/10,
+.light-theme .bg-pink-500\/20 {
+  background-color: #fdf2f8 !important;
+  border: 1px solid #fbcfe8 !important;
+  color: #be185d !important;
+}
+
+/* Tables in Light Mode */
+.light-theme table {
+  background-color: #ffffff !important;
+}
+
+.light-theme thead th {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  font-weight: 600 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.light-theme tbody tr {
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.light-theme tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+.light-theme tbody td {
+  color: #0f172a !important;
+}
+
+/* Charts & Recharts Polish */
+.light-theme .recharts-default-tooltip {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1) !important;
+  border-radius: 12px !important;
+  color: #0f172a !important;
+}
+
+.light-theme .recharts-cartesian-grid-horizontal line,
+.light-theme .recharts-cartesian-grid-vertical line {
+  stroke: #f1f5f9 !important;
+}
+
+.light-theme .recharts-text {
+  fill: #64748b !important;
+  font-weight: 500 !important;
+}
+
+/* Modals, Floating Panels & Drawers in Light Theme */
+.light-theme .backdrop-blur-xl,
+.light-theme .backdrop-blur-md {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.18) !important;
+}
+
+.light-theme .shadow-2xl {
+  box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.12) !important;
+}
+
+/* Scrollbars in Light Mode */
+.light-theme ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.light-theme ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 6px;
+}
+
+.light-theme ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
 
 
