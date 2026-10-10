@@ -30,7 +30,7 @@ function App() {
             <Route path="/analytics" element={<Neo />} />
             <Route path="/assets" element={<Assets />} />
             <Route path="/campulse" element={<Dashboard defaultTab="campaigns" />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard defaultTab="overview" />} />
             <Route path="/optimise" element={<Dashboard defaultTab="recommendation" />} />
             <Route path="/recommendation" element={<Dashboard defaultTab="recommendation" />} />
             <Route path="/processing" element={<Pixeo />} />

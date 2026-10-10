@@ -29,9 +29,19 @@ const platformData = [
   { name: 'Meta Stories', value: 10, color: '#ec4899' },
 ];
 
-export default function Dashboard({ defaultTab = 'recommendation' }: DashboardProps) {
+export default function Dashboard({ defaultTab = 'overview' }: DashboardProps) {
   const { theme, toggleTheme } = useTheme();
-  const [activeTab, setActiveTab] = useState<string>(defaultTab);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const getInitialTab = () => {
+    if (location.pathname === '/dashboard') return 'overview';
+    if (location.pathname === '/optimise' || location.pathname === '/recommendation') return 'recommendation';
+    if (location.pathname === '/campulse') return 'campaigns';
+    return defaultTab || 'overview';
+  };
+
+  const [activeTab, setActiveTab] = useState<string>(getInitialTab);
   const [isMetaConnected, setIsMetaConnected] = useState<boolean>(false);
   const [metaAccountName, setMetaAccountName] = useState<string | null>(null);
   const [metaAccountId, setMetaAccountId] = useState<string | null>(null);
@@ -49,8 +59,17 @@ export default function Dashboard({ defaultTab = 'recommendation' }: DashboardPr
   // Optimization Actions Applied State
   const [appliedRecommendations, setAppliedRecommendations] = useState<Record<string, boolean>>({});
 
-  const navigate = useNavigate();
-  const location = useLocation();
+  useEffect(() => {
+    if (location.pathname === '/dashboard') {
+      setActiveTab('overview');
+    } else if (location.pathname === '/optimise' || location.pathname === '/recommendation') {
+      setActiveTab('recommendation');
+    } else if (location.pathname === '/campulse') {
+      setActiveTab('campaigns');
+    } else if (defaultTab) {
+      setActiveTab(defaultTab);
+    }
+  }, [location.pathname, defaultTab]);
 
   const getAuthHeader = () => {
     const token = localStorage.getItem('token');
@@ -209,7 +228,12 @@ export default function Dashboard({ defaultTab = 'recommendation' }: DashboardPr
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  if (tab.id === 'overview') navigate('/dashboard');
+                  else if (tab.id === 'recommendation') navigate('/optimise');
+                  else if (tab.id === 'campaigns') navigate('/campulse');
+                }}
                 className={`py-3 text-sm sm:text-[15px] font-medium transition-all relative cursor-pointer ${
                   isActive 
                     ? 'text-white font-semibold' 
