@@ -34,12 +34,12 @@ export default function MainLayout() {
         {/* Logo Section */}
         <div className="flex items-center h-28 px-4 whitespace-nowrap overflow-hidden shrink-0 gap-4 transition-all duration-300 pl-[14px]">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-orange-400 flex items-center justify-center relative shadow-lg shadow-purple-500/20 shrink-0">
-            <span className="text-white font-bold text-2xl" style={{ fontFamily: 'sans-serif', letterSpacing: '-1px' }}>N</span>
+            <span className="text-white font-bold text-2xl" style={{ fontFamily: 'sans-serif', letterSpacing: '-1px' }}>K</span>
             <svg className="absolute top-2 right-2 w-2.5 h-2.5 text-white fill-current" viewBox="0 0 24 24">
               <path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9L12 2Z" />
             </svg>
           </div>
-          <span className="font-bold text-xl tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">NYX</span>
+          <span className="font-bold text-xl tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">KPILOT</span>
         </div>
 
         {/* Navigation */}
@@ -135,8 +135,14 @@ export default function MainLayout() {
       <div className="flex flex-col flex-1 w-0 overflow-hidden bg-[#0f0f13] transition-all duration-300">
         {/* Mobile Header */}
         <div className="md:hidden flex items-center justify-between p-4 bg-black border-b border-white/5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-orange-400 flex items-center justify-center">
-            <span className="text-white font-bold text-lg">N</span>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 via-purple-500 to-orange-400 flex items-center justify-center relative shadow-md">
+              <span className="text-white font-bold text-lg">K</span>
+              <svg className="absolute top-1 right-1 w-2 h-2 text-white fill-current" viewBox="0 0 24 24">
+                <path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9L12 2Z" />
+              </svg>
+            </div>
+            <span className="font-bold text-lg tracking-wider text-white">KPILOT</span>
           </div>
           <button className="text-white hover:bg-white/10 p-2 rounded-md">
             <Menu className="h-6 w-6" />
