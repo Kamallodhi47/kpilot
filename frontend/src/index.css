@@ -420,13 +420,20 @@ body.light-theme,
 }
 
 .light-theme .bg-black,
+.light-theme .bg-\[\#07070a\],
 .light-theme .bg-\[\#07070b\],
 .light-theme .bg-\[\#07070c\],
 .light-theme .bg-\[\#07070d\],
 .light-theme .bg-\[\#07070e\],
+.light-theme .bg-\[\#09090e\],
 .light-theme .bg-\[\#090912\],
+.light-theme .bg-\[\#0a0a0f\],
 .light-theme .bg-\[\#0a0a12\],
+.light-theme .bg-\[\#0a0a14\],
+.light-theme .bg-\[\#0b0816\],
 .light-theme .bg-\[\#0b0b14\],
+.light-theme .bg-\[\#0d091a\],
+.light-theme .bg-\[\#0d0d14\],
 .light-theme .bg-\[\#0d0d16\],
 .light-theme .bg-\[\#0d0d17\],
 .light-theme .bg-\[\#0e0d19\],
@@ -436,6 +443,7 @@ body.light-theme,
 .light-theme .bg-\[\#11111e\],
 .light-theme .bg-\[\#12111d\],
 .light-theme .bg-\[\#121122\],
+.light-theme .bg-\[\#12121c\],
 .light-theme .bg-\[\#12121f\],
 .light-theme .bg-\[\#131222\],
 .light-theme .bg-\[\#131320\],
@@ -444,17 +452,29 @@ body.light-theme,
 .light-theme .bg-\[\#141420\],
 .light-theme .bg-\[\#141422\],
 .light-theme .bg-\[\#161528\],
+.light-theme .bg-\[\#161622\],
 .light-theme .bg-\[\#161626\],
+.light-theme .bg-\[\#18122B\],
 .light-theme .bg-\[\#181628\],
 .light-theme .bg-\[\#1a192c\],
-.light-theme .bg-\[\#1e153a\] {
+.light-theme .bg-\[\#1c1c28\],
+.light-theme .bg-\[\#1e153a\],
+.light-theme .bg-slate-900,
+.light-theme .bg-slate-950,
+.light-theme .bg-zinc-900,
+.light-theme .bg-zinc-950,
+.light-theme .bg-gray-900,
+.light-theme .bg-gray-950,
+.light-theme .bg-neutral-900,
+.light-theme .bg-neutral-950 {
   background-color: #ffffff !important;
   color: #0f172a !important;
 }
 
 .light-theme main,
 .light-theme aside,
-.light-theme header {
+.light-theme header,
+.light-theme nav {
   background-color: #f8fafc !important;
   color: #0f172a !important;
 }
@@ -503,6 +523,7 @@ body.light-theme,
   color: #0f172a !important;
 }
 
+.light-theme .bg-black\/20,
 .light-theme .bg-black\/30,
 .light-theme .bg-black\/40,
 .light-theme .bg-black\/50,
@@ -517,7 +538,9 @@ body.light-theme,
 .light-theme .bg-\[\#5b3af6\],
 .light-theme .bg-\[\#7c3aed\],
 .light-theme .bg-purple-600,
-.light-theme .bg-indigo-600 {
+.light-theme .bg-purple-700,
+.light-theme .bg-indigo-600,
+.light-theme .bg-indigo-700 {
   background-color: #7c3aed !important;
   color: #ffffff !important;
 }
@@ -526,7 +549,14 @@ body.light-theme,
 .light-theme .bg-\[\#5b3af6\] *,
 .light-theme .bg-\[\#7c3aed\] *,
 .light-theme .bg-purple-600 *,
-.light-theme .bg-indigo-600 * {
+.light-theme .bg-purple-700 *,
+.light-theme .bg-indigo-600 *,
+.light-theme .bg-indigo-700 *,
+.light-theme .from-purple-500 *,
+.light-theme .from-purple-600 *,
+.light-theme .from-indigo-500 *,
+.light-theme .bg-gradient-to-r *,
+.light-theme .bg-gradient-to-br * {
   color: #ffffff !important;
 }
 

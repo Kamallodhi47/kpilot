@@ -30,6 +30,7 @@ const platformData = [
 ];
 
 export default function Dashboard({ defaultTab = 'recommendation' }: DashboardProps) {
+  const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<string>(defaultTab);
   const [isMetaConnected, setIsMetaConnected] = useState<boolean>(false);
   const [metaAccountName, setMetaAccountName] = useState<string | null>(null);
@@ -40,7 +41,6 @@ export default function Dashboard({ defaultTab = 'recommendation' }: DashboardPr
   const [isLoadingCampaigns, setIsLoadingCampaigns] = useState<boolean>(false);
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
   
   const [userInitial, setUserInitial] = useState<string>('U');
   const [userName, setUserName] = useState<string>('User');
