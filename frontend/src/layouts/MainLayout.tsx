@@ -39,7 +39,7 @@ export default function MainLayout() {
               <path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9L12 2Z" />
             </svg>
           </div>
-          <span className="font-bold text-xl tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">KPILOT</span>
+          <span className="font-bold text-xl tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">PILOT</span>
         </div>
 
         {/* Navigation */}
@@ -142,7 +142,7 @@ export default function MainLayout() {
                 <path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9L12 2Z" />
               </svg>
             </div>
-            <span className="font-bold text-lg tracking-wider text-white">KPILOT</span>
+            <span className="font-bold text-lg tracking-wider text-white">PILOT</span>
           </div>
           <button className="text-white hover:bg-white/10 p-2 rounded-md">
             <Menu className="h-6 w-6" />
