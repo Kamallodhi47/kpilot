@@ -630,23 +630,16 @@ def connect_meta_by_id(req: ConnectByIdRequest, current_user: Optional[User] = D
 
 @app.get("/api/meta/campaigns")
 def get_meta_campaigns(account_id: Optional[str] = None, current_user: Optional[User] = Depends(get_optional_user)):
-    token = None
-    if current_user and current_user.meta_access_token:
-        token = current_user.meta_access_token.strip()
-    else:
-        env_token = os.getenv("META_ACCESS_TOKEN", "").strip()
-        if env_token:
-            token = env_token
-            
-    if not token:
+    if not current_user or not current_user.meta_access_token:
         return {"data": []}
         
+    token = current_user.meta_access_token.strip()
     try:
-        target_account = account_id or (current_user.selected_ad_account_id if current_user else None) or active_connected_meta.get("selected_ad_account_id")
+        target_account = account_id or current_user.selected_ad_account_id
         
         if not target_account:
             details = fetch_meta_details(token)
-            if details["ad_accounts"]:
+            if details.get("ad_accounts"):
                 target_account = details["ad_accounts"][0]["id"]
             else:
                 return {"data": []}
@@ -719,19 +712,19 @@ def generate_ai_campaign(req: GenerateCampaignRequest):
 @app.post("/api/meta/publish-campaign")
 def publish_meta_campaign(
     req: PublishCampaignRequest, 
-    current_user: Optional[User] = Depends(get_optional_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """1-Click Autonomous Meta Ads Publishing via System Token."""
-    token = get_system_token(current_user)
+    """1-Click Autonomous Meta Ads Publishing for authenticated user."""
+    token = current_user.meta_access_token.strip() if current_user.meta_access_token else None
     if not token:
-        raise HTTPException(status_code=400, detail="Meta System Access Token not configured")
+        raise HTTPException(status_code=400, detail="Please connect your Meta account before launching campaigns.")
         
-    ad_acc = req.ad_account_id or (current_user.selected_ad_account_id if current_user else None)
+    ad_acc = req.ad_account_id or current_user.selected_ad_account_id
     if not ad_acc:
-        # Fallback to first ad account in portfolio
+        # Fallback to first ad account in user's portfolio
         details = fetch_meta_details(token)
-        if details["ad_accounts"]:
+        if details.get("ad_accounts"):
             ad_acc = details["ad_accounts"][0]["id"]
         else:
             raise HTTPException(status_code=400, detail="No Meta Ad Account selected or accessible.")
@@ -757,9 +750,8 @@ def publish_meta_campaign(
 
         # Step 2: Store campaign in DB assigned to current_user
         try:
-            target_uid = current_user.id if current_user else 1
             new_camp_record = Campaign(
-                user_id=target_uid,
+                user_id=current_user.id,
                 meta_campaign_id=str(campaign_id),
                 campaign_name=req.campaign_name,
                 objective=req.objective,
@@ -1191,7 +1183,9 @@ def get_user_leads(
     Returns only the leads belonging to the currently logged in user.
     Strictly isolated: User A cannot see User B's leads.
     """
-    user_id = current_user.id if current_user else 1
+    if not current_user:
+        return {"success": True, "count": 0, "leads": []}
+    user_id = current_user.id
     query = db.query(Lead).filter(Lead.user_id == user_id)
 
     if status and status != "All":
@@ -1245,8 +1239,16 @@ def get_user_lead_stats(
     current_user: Optional[User] = Depends(get_optional_user),
     db: Session = Depends(get_db)
 ):
-    """Returns analytics & lead conversion counters for the current user."""
-    user_id = current_user.id if current_user else 1
+    """Returns analytics & lead conversion counters strictly for the current user."""
+    if not current_user:
+        return {
+            "total_leads": 0,
+            "today_leads": 0,
+            "contacted_leads": 0,
+            "converted_leads": 0,
+            "instagram_dms": 0
+        }
+    user_id = current_user.id
     total = db.query(Lead).filter(Lead.user_id == user_id).count()
     
     today_start = datetime.datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -1269,11 +1271,10 @@ def get_user_lead_stats(
 def update_lead_status(
     lead_id: int,
     req: UpdateLeadStatusRequest,
-    current_user: Optional[User] = Depends(get_optional_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    user_id = current_user.id if current_user else 1
-    lead = db.query(Lead).filter(Lead.id == lead_id, Lead.user_id == user_id).first()
+    lead = db.query(Lead).filter(Lead.id == lead_id, Lead.user_id == current_user.id).first()
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
 
@@ -1287,11 +1288,10 @@ def update_lead_status(
 @app.delete("/api/leads/{lead_id}")
 def delete_lead(
     lead_id: int,
-    current_user: Optional[User] = Depends(get_optional_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    user_id = current_user.id if current_user else 1
-    lead = db.query(Lead).filter(Lead.id == lead_id, Lead.user_id == user_id).first()
+    lead = db.query(Lead).filter(Lead.id == lead_id, Lead.user_id == current_user.id).first()
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
 
@@ -1303,12 +1303,12 @@ def delete_lead(
 @app.post("/api/leads/test")
 def create_test_lead(
     req: CreateTestLeadRequest,
-    current_user: Optional[User] = Depends(get_optional_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Generates a sample lead (Form or Instagram Video Ad DM) for testing."""
     import random
-    user_id = current_user.id if current_user else 1
+    user_id = current_user.id
     
     if req.lead_type == "Instagram DM":
         sample_ig_users = [
