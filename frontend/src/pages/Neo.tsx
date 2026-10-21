@@ -11,6 +11,7 @@ import { useTheme } from '../context/ThemeContext';
 export default function Neo() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
 
   // User Profile
   const [userName, setUserName] = useState('User');
@@ -99,25 +100,25 @@ export default function Neo() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#07070c] text-white overflow-hidden select-none font-sans">
+    <div className={`flex flex-col h-screen ${isDark ? 'bg-[#07070c] text-white' : 'bg-slate-50 text-slate-900'} overflow-hidden select-none font-sans`}>
       
       {/* ================= 1. TOP GLOBAL HEADER BAR ================= */}
-      <header className="h-14 px-5 sm:px-6 bg-[#090912] border-b border-white/5 flex items-center justify-between shrink-0 z-20">
+      <header className={`h-14 px-5 sm:px-6 ${isDark ? 'bg-[#090912] border-white/5' : 'bg-white border-slate-200 shadow-sm'} border-b flex items-center justify-between shrink-0 z-20`}>
         <div className="flex items-center gap-3">
-          <h1 className="text-lg sm:text-xl font-bold tracking-wider text-white">NEO</h1>
+          <h1 className={`text-lg sm:text-xl font-bold tracking-wider ${isDark ? 'text-white' : 'text-slate-900'}`}>NEO</h1>
         </div>
 
         <div className="flex items-center gap-3.5">
           {/* Theme Switcher Pill */}
           <button 
             onClick={toggleTheme}
-            className="w-10 h-6 rounded-full bg-[#161626] border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors cursor-pointer"
-            title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+            className={`w-10 h-6 rounded-full ${isDark ? 'bg-[#161626] border-white/10 text-gray-400' : 'bg-slate-200 border-slate-300 text-slate-700'} border flex items-center justify-center transition-colors cursor-pointer`}
+            title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
           >
-            {theme === 'dark' ? <Moon className="w-3.5 h-3.5 text-gray-300" /> : <Sun className="w-3.5 h-3.5 text-amber-500" />}
+            {isDark ? <Moon className="w-3.5 h-3.5 text-gray-300" /> : <Sun className="w-3.5 h-3.5 text-amber-500" />}
           </button>
 
-          {/* User Initial Avatar (Exact orange circle matching screenshot) */}
+          {/* User Initial Avatar */}
           <div className="w-8 h-8 rounded-full bg-[#ea580c] flex items-center justify-center text-white text-xs font-bold shadow-md shadow-orange-600/30">
             {userInitial}
           </div>
@@ -125,19 +126,19 @@ export default function Neo() {
       </header>
 
       {/* ================= 2. SUBHEADER / TOOLBAR ================= */}
-      <div className="h-14 px-5 sm:px-6 bg-[#090912] border-b border-white/5 flex items-center justify-between shrink-0 z-10">
+      <div className={`h-14 px-5 sm:px-6 ${isDark ? 'bg-[#090912] border-white/5' : 'bg-white border-slate-200'} border-b flex items-center justify-between shrink-0 z-10`}>
         
         {/* Left: Analytics Workspace & Project ID */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-300">
+          <div className={`w-8 h-8 rounded-xl ${isDark ? 'bg-white/5 border-white/10 text-gray-300' : 'bg-slate-100 border-slate-200 text-slate-700'} border flex items-center justify-center`}>
             <div className="flex items-center gap-0.5">
-              <span className="w-1 h-3.5 bg-gray-300 rounded-full"></span>
-              <span className="w-1 h-3.5 bg-gray-300 rounded-full"></span>
+              <span className={`w-1 h-3.5 ${isDark ? 'bg-gray-300' : 'bg-slate-600'} rounded-full`}></span>
+              <span className={`w-1 h-3.5 ${isDark ? 'bg-gray-300' : 'bg-slate-600'} rounded-full`}></span>
             </div>
           </div>
           <div className="flex flex-col">
-            <span className="text-sm sm:text-base font-bold text-white leading-tight">Analytics Workspace</span>
-            <span className="text-[11px] text-gray-400 font-mono">project-2481</span>
+            <span className={`text-sm sm:text-base font-bold ${isDark ? 'text-white' : 'text-slate-900'} leading-tight`}>Analytics Workspace</span>
+            <span className={`text-[11px] ${isDark ? 'text-gray-400' : 'text-slate-500'} font-mono`}>project-2481</span>
           </div>
         </div>
 

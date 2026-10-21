@@ -4,10 +4,11 @@ import {
   Mic, Send, Paperclip, Moon, Sun, BarChart2, Sparkles, ExternalLink, Globe, 
   ShieldCheck, RefreshCw, AlertCircle, ArrowRight, Zap, Target, Volume2, 
   Folder, Layers, Radio, Check, ChevronDown, Maximize2, X, FileText, ChevronRight,
-  Columns
+  Columns, Key
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { MetaConnectModal } from '../components/MetaConnectModal';
 
 interface AdAccount {
   id: string;
@@ -46,6 +47,7 @@ export default function CampaignBuilder() {
   const [accountName, setAccountName] = useState<string | null>(null);
   const [adAccounts, setAdAccounts] = useState<AdAccount[]>([]);
   const [selectedAdAccount, setSelectedAdAccount] = useState<string>('');
+  const [isConnectModalOpen, setIsConnectModalOpen] = useState<boolean>(false);
   
   // AI Campaign Form State
   const [productName, setProductName] = useState('Organic Whey Isolate Protein');
@@ -115,6 +117,24 @@ export default function CampaignBuilder() {
         }
       })
       .catch(err => console.error(err));
+  };
+
+  const handleConnectMeta = () => {
+    setIsConnectModalOpen(true);
+  };
+
+  const handleDisconnectMeta = async () => {
+    if (!window.confirm("Are you sure you want to disconnect your Meta account?")) return;
+    try {
+      await fetch('/api/meta/disconnect', {
+        method: 'POST',
+        headers: { ...getAuthHeader() }
+      });
+      fetchStatus();
+      setLiveCampaigns([]);
+    } catch (err) {
+      console.error('Failed to disconnect Meta:', err);
+    }
   };
 
   // 3. Fetch Live Campaigns
@@ -460,8 +480,8 @@ export default function CampaignBuilder() {
                     LAUNCH READINESS
                   </span>
                   <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full ${isDark ? 'bg-black/40 border-white/20 text-gray-200' : 'bg-slate-100 border-slate-200 text-slate-700'} border text-xs font-medium`}>
-                    <span className={`w-2 h-2 rounded-full ${isMetaConnected ? 'bg-emerald-400' : isDark ? 'bg-gray-400' : 'bg-slate-400'}`}></span>
-                    <span>{isMetaConnected ? 'Connected' : 'Unknown'}</span>
+                    <span className={`w-2 h-2 rounded-full ${isMetaConnected ? 'bg-emerald-400' : 'bg-amber-400'}`}></span>
+                    <span>{isMetaConnected ? 'Connected' : 'Not Connected'}</span>
                   </div>
                 </div>
 
@@ -469,19 +489,54 @@ export default function CampaignBuilder() {
                   Are you ready to launch your campaign?
                 </h2>
                 <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-slate-500'} mt-1 mb-5`}>
-                  {isMetaConnected 
-                    ? `Active account: ${accountName || 'Vansh Jaat'} (${selectedAdAccount || 'act_1441161704572702'}). Ready to launch!` 
-                    : "We couldn't check your ad accounts right now."}
+                  {isMetaConnected && selectedAdAccount
+                    ? `Active account: ${accountName || 'Connected User'} (${selectedAdAccount}). Ready to launch!` 
+                    : "No Meta ad account connected yet. Connect your Meta Ads account to start launching campaigns."}
                 </p>
 
-                <div>
+                <div className="flex flex-wrap items-center gap-3">
                   <button
-                    onClick={fetchStatus}
+                    onClick={handleConnectMeta}
                     className="px-5 py-2.5 rounded-full bg-[#5b3af6] hover:bg-[#4f2ee8] text-white text-xs sm:text-sm font-semibold shadow-md shadow-indigo-600/30 transition-all cursor-pointer inline-flex items-center gap-2"
                   >
-                    Connect ad accounts
+                    <Key className="w-4 h-4" />
+                    {isMetaConnected ? 'Switch / Reconnect Meta' : 'Connect Meta Ads'}
                   </button>
+
+                  {isMetaConnected && (
+                    <button
+                      onClick={handleDisconnectMeta}
+                      className={`px-4 py-2.5 rounded-full border text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
+                        isDark 
+                          ? 'border-white/10 text-gray-400 hover:text-rose-400 hover:border-rose-400/40 bg-white/5' 
+                          : 'border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-200 bg-slate-50'
+                      }`}
+                    >
+                      Disconnect
+                    </button>
+                  )}
                 </div>
+
+                {isMetaConnected && adAccounts.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/10 flex flex-wrap items-center gap-3">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-gray-400">
+                      Active Ad Account:
+                    </span>
+                    <select
+                      value={selectedAdAccount}
+                      onChange={(e) => handleSelectAccount(e.target.value)}
+                      className={`text-xs font-semibold px-3 py-1.5 rounded-lg border outline-none cursor-pointer ${
+                        isDark ? 'bg-black/40 border-white/20 text-white' : 'bg-slate-50 border-slate-200 text-slate-800'
+                      }`}
+                    >
+                      {adAccounts.map(acc => (
+                        <option key={acc.id} value={acc.id}>
+                          {acc.name} ({acc.id}) - {acc.currency}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
 
               {/* DRAFT NOT STARTED YET CARD */}
@@ -829,6 +884,14 @@ export default function CampaignBuilder() {
 
       </div>
 
+      <MetaConnectModal
+        isOpen={isConnectModalOpen}
+        onClose={() => setIsConnectModalOpen(false)}
+        onSuccess={() => {
+          fetchStatus();
+          fetchCampaigns();
+        }}
+      />
     </div>
   );
 }

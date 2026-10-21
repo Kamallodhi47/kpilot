@@ -554,7 +554,11 @@ body.light-theme,
 [data-theme="dark"] .nav-item-active * {
   color: #ffffff !important;
   fill: #ffffff !important;
-  opacity: 1 !important;
+}
+
+/* Ensure collapsed sidebar text stays hidden even when active */
+.hidden.md\:flex:not(:hover) .opacity-0 {
+  opacity: 0 !important;
 }
 
 /* Tree connector lines in light mode */

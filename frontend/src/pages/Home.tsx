@@ -5,6 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 
 export default function Home() {
   const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
   const [userName, setUserName] = useState('User');
   const [userInitial, setUserInitial] = useState('U');
   const [userEmail, setUserEmail] = useState('');
@@ -91,15 +92,15 @@ export default function Home() {
   };
 
   return (
-    <div className="h-full w-full flex flex-col bg-[#0a0a0f] text-white rounded-2xl relative overflow-y-auto scrollbar-none animate-in fade-in duration-300">
+    <div className={`h-full w-full flex flex-col ${isDark ? 'bg-[#0a0a0f] text-white' : 'bg-slate-50 text-slate-900'} rounded-2xl relative overflow-y-auto scrollbar-none animate-in fade-in duration-300 transition-colors`}>
       
       {/* Top Header */}
       <div className="flex justify-between items-center p-6 sm:p-8 z-20 relative shrink-0">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white font-sans">
-            Welcome to NYX, <span className="text-white">{userName}</span>
+          <h1 className={`text-2xl sm:text-3xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'} font-sans`}>
+            Welcome to KPILOT, <span className={isDark ? 'text-white' : 'text-purple-600'}>{userName}</span>
           </h1>
-          <p className="text-sm text-gray-400 mt-1">Let's start a new project</p>
+          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-slate-500'} mt-1`}>Let's start a new project</p>
         </div>
         
         <div className="flex items-center gap-3 sm:gap-4">
@@ -113,19 +114,19 @@ export default function Home() {
           
           <button 
             onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all"
+            className={`flex items-center gap-2 ${isDark ? 'bg-white/5 hover:bg-white/10 border-white/10 text-white' : 'bg-slate-200 hover:bg-slate-300 border-slate-300 text-slate-800'} border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all`}
           >
             <span className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,1)]"></span>
             Take a tour
           </button>
 
-          <div className="flex items-center bg-white/5 rounded-full p-1 border border-white/10">
+          <div className={`flex items-center ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-200 border-slate-300'} rounded-full p-1 border`}>
             <button
               onClick={toggleTheme}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-colors cursor-pointer"
-              title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${isDark ? 'text-gray-400 hover:text-white' : 'text-slate-700 hover:text-slate-950'} transition-colors cursor-pointer`}
+              title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
             >
-              {theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4 text-amber-500" />}
+              {isDark ? <Moon className="w-4 h-4 text-purple-300" /> : <Sun className="w-4 h-4 text-amber-500" />}
             </button>
           </div>
 
@@ -141,24 +142,24 @@ export default function Home() {
 
             {/* Profile Dropdown */}
             {showProfileMenu && (
-              <div className="absolute right-0 mt-3 w-56 bg-[#12121c] border border-white/10 rounded-2xl p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-200">
-                <div className="px-3 py-2 border-b border-white/5">
-                  <p className="text-xs text-gray-400 font-medium">Signed in as</p>
-                  <p className="text-sm font-semibold text-white truncate">{userEmail || userName}</p>
+              <div className={`absolute right-0 mt-3 w-56 ${isDark ? 'bg-[#12121c] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900'} border rounded-2xl p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-200`}>
+                <div className={`px-3 py-2 border-b ${isDark ? 'border-white/5' : 'border-slate-100'}`}>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-slate-500'} font-medium`}>Signed in as</p>
+                  <p className={`text-sm font-semibold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{userEmail || userName}</p>
                 </div>
 
                 <div className="py-1">
                   <button
                     onClick={() => { setShowProfileMenu(false); navigate('/dashboard'); }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs ${isDark ? 'text-gray-300 hover:text-white hover:bg-white/5' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100'} rounded-xl transition-colors`}
                   >
-                    <UserIcon className="w-4 h-4 text-purple-400" />
+                    <UserIcon className="w-4 h-4 text-purple-500" />
                     Dashboard & Workspace
                   </button>
 
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors mt-1"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-rose-500 hover:bg-rose-500/10 rounded-xl transition-colors mt-1"
                   >
                     <LogOut className="w-4 h-4" />
                     Sign Out
@@ -174,15 +175,15 @@ export default function Home() {
       <div className="flex flex-col items-center justify-center px-4 z-10 relative pt-4 pb-8">
         
         {/* Title */}
-        <h2 className="text-3xl sm:text-5xl font-bold mb-8 text-center tracking-tight font-sans">
-          What will you create <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">today?</span>
+        <h2 className={`text-3xl sm:text-5xl font-bold mb-8 text-center tracking-tight font-sans ${isDark ? 'text-white' : 'text-slate-900'}`}>
+          What will you create <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-indigo-600">today?</span>
         </h2>
 
         {/* Big Interactive Input Box */}
         <div className="w-full max-w-4xl relative mb-8 group">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 opacity-25 rounded-2xl blur-md group-hover:opacity-50 transition duration-500"></div>
           
-          <div className="relative bg-[#07070c] border border-purple-500/30 rounded-2xl p-5 min-h-[170px] flex flex-col justify-between shadow-2xl">
+          <div className={`relative ${isDark ? 'bg-[#07070c] border-purple-500/30' : 'bg-white border-purple-300 shadow-xl'} border rounded-2xl p-5 min-h-[170px] flex flex-col justify-between shadow-2xl`}>
             <textarea 
               value={promptInput}
               onChange={(e) => setPromptInput(e.target.value)}
@@ -192,7 +193,7 @@ export default function Home() {
                   handleLaunchPrompt();
                 }
               }}
-              className="w-full bg-transparent resize-none outline-none text-base sm:text-lg text-white p-1 placeholder-gray-500 scrollbar-none"
+              className={`w-full bg-transparent resize-none outline-none text-base sm:text-lg ${isDark ? 'text-white placeholder-gray-500' : 'text-slate-900 placeholder-slate-400'} p-1 scrollbar-none`}
               placeholder="Launch a retargeting campaign for weekend site visitors..."
               rows={3}
             />
@@ -203,7 +204,7 @@ export default function Home() {
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
                   isListening 
                     ? 'bg-rose-500 text-white animate-pulse' 
-                    : 'bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white'
+                    : isDark ? 'bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900'
                 }`}
                 title="Voice Input"
               >
@@ -226,44 +227,44 @@ export default function Home() {
         <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 mb-8 max-w-4xl">
           <button 
             onClick={() => navigate('/build')}
-            className="flex items-center gap-2 bg-black/50 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-full text-xs transition-all hover:scale-105"
+            className={`flex items-center gap-2 ${isDark ? 'bg-black/50 hover:bg-white/10 border-white/10' : 'bg-white hover:bg-slate-100 border-slate-200 shadow-sm'} border px-4 py-2 rounded-full text-xs transition-all hover:scale-105`}
           >
             <span className="w-5 h-5 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-400"><Target className="w-3 h-3" /></span>
-            <span className="font-bold text-white">Xeno</span>
-            <span className="text-gray-400">- Launch autonomous campaigns</span>
+            <span className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Xeno</span>
+            <span className={isDark ? 'text-gray-400' : 'text-slate-500'}>- Launch autonomous campaigns</span>
           </button>
 
           <button 
             onClick={() => navigate('/processing')}
-            className="flex items-center gap-2 bg-black/50 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-full text-xs transition-all hover:scale-105"
+            className={`flex items-center gap-2 ${isDark ? 'bg-black/50 hover:bg-white/10 border-white/10' : 'bg-white hover:bg-slate-100 border-slate-200 shadow-sm'} border px-4 py-2 rounded-full text-xs transition-all hover:scale-105`}
           >
             <span className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400"><ImageIcon className="w-3 h-3" /></span>
-            <span className="font-bold text-white">Pixeo</span>
-            <span className="text-gray-400">- Generate creatives</span>
+            <span className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Pixeo</span>
+            <span className={isDark ? 'text-gray-400' : 'text-slate-500'}>- Generate creatives</span>
           </button>
 
           <button 
             onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 bg-black/50 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-full text-xs transition-all hover:scale-105"
+            className={`flex items-center gap-2 ${isDark ? 'bg-black/50 hover:bg-white/10 border-white/10' : 'bg-white hover:bg-slate-100 border-slate-200 shadow-sm'} border px-4 py-2 rounded-full text-xs transition-all hover:scale-105`}
           >
             <span className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400"><BarChart2 className="w-3 h-3" /></span>
-            <span className="font-bold text-white">Analytics</span>
-            <span className="text-gray-400">- Chat with your data</span>
+            <span className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Analytics</span>
+            <span className={isDark ? 'text-gray-400' : 'text-slate-500'}>- Chat with your data</span>
           </button>
 
           <button 
             onClick={() => navigate('/optimise')}
-            className="flex items-center gap-2 bg-black/50 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-full text-xs transition-all hover:scale-105"
+            className={`flex items-center gap-2 ${isDark ? 'bg-black/50 hover:bg-white/10 border-white/10' : 'bg-white hover:bg-slate-100 border-slate-200 shadow-sm'} border px-4 py-2 rounded-full text-xs transition-all hover:scale-105`}
           >
             <span className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400"><Lightbulb className="w-3 h-3" /></span>
-            <span className="font-bold text-white">Recommendations</span>
-            <span className="text-gray-400">- Know what to do next</span>
+            <span className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Recommendations</span>
+            <span className={isDark ? 'text-gray-400' : 'text-slate-500'}>- Know what to do next</span>
           </button>
         </div>
 
         {/* Quick Suggestion Pills */}
         <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 text-xs mb-12">
-          <span className="text-gray-500 font-bold uppercase tracking-widest text-[11px]">TRY:</span>
+          <span className={`${isDark ? 'text-gray-500' : 'text-slate-400'} font-bold uppercase tracking-widest text-[11px]`}>TRY:</span>
           
           {[
             "Launch my next campaign autonomously",
@@ -281,7 +282,7 @@ export default function Home() {
                 className={`px-4 py-2 rounded-full text-xs transition-all shadow-sm ${
                   isSelected
                     ? 'bg-[#8b5cf6] text-white font-medium shadow-purple-500/30'
-                    : 'border border-white/10 hover:border-purple-500/50 text-gray-400 hover:text-white bg-black/40 hover:bg-purple-950/20'
+                    : isDark ? 'border border-white/10 hover:border-purple-500/50 text-gray-400 hover:text-white bg-black/40 hover:bg-purple-950/20' : 'border border-slate-200 hover:border-purple-400 text-slate-700 hover:text-purple-700 bg-white hover:bg-purple-50'
                 }`}
               >
                 {suggestion}
@@ -292,21 +293,21 @@ export default function Home() {
 
       </div>
 
-      {/* YOUR RECENT PROJECTS SECTION - Exact match to screenshot */}
+      {/* YOUR RECENT PROJECTS SECTION */}
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-8 pb-10 z-10 relative">
         
         {/* Section Header with Purple Vertical Indicator */}
         <div className="flex items-center gap-2.5 mb-4">
           <div className="w-1 h-5 bg-[#8b5cf6] rounded-full" />
-          <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight font-sans">
+          <h3 className={`text-lg sm:text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'} tracking-tight font-sans`}>
             Your Recent Projects
           </h3>
         </div>
 
-        {/* Projects Container (Dashed border box matching screenshot) */}
+        {/* Projects Container */}
         {recentProjects.length === 0 ? (
-          <div className="w-full border border-dashed border-white/10 rounded-2xl py-12 px-6 flex items-center justify-center bg-black/20">
-            <p className="text-gray-500 text-sm font-normal">
+          <div className={`w-full border border-dashed ${isDark ? 'border-white/10 bg-black/20' : 'border-slate-300 bg-white'} rounded-2xl py-12 px-6 flex items-center justify-center`}>
+            <p className={`${isDark ? 'text-gray-500' : 'text-slate-500'} text-sm font-normal`}>
               No recent projects found.
             </p>
           </div>
@@ -316,7 +317,7 @@ export default function Home() {
               <div 
                 key={idx}
                 onClick={() => navigate('/dashboard')}
-                className="bg-[#0f0f18] border border-white/10 hover:border-purple-500/40 rounded-2xl p-4 transition-all cursor-pointer group hover:bg-[#141322]"
+                className={`${isDark ? 'bg-[#0f0f18] border-white/10 hover:bg-[#141322]' : 'bg-white border-slate-200 hover:bg-slate-50 shadow-sm'} border hover:border-purple-500/40 rounded-2xl p-4 transition-all cursor-pointer group`}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
@@ -330,15 +331,15 @@ export default function Home() {
                     {proj.status}
                   </span>
                 </div>
-                <h4 className="text-white font-semibold text-sm group-hover:text-purple-300 transition-colors truncate">
+                <h4 className={`${isDark ? 'text-white' : 'text-slate-900'} font-semibold text-sm group-hover:text-purple-600 transition-colors truncate`}>
                   {proj.name}
                 </h4>
-                <p className="text-gray-400 text-xs mt-1 font-mono">
+                <p className={`${isDark ? 'text-gray-400' : 'text-slate-500'} text-xs mt-1 font-mono`}>
                   {proj.objective}
                 </p>
-                <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5 text-xs text-gray-400">
+                <div className={`flex items-center justify-between mt-4 pt-3 border-t ${isDark ? 'border-white/5 text-gray-400' : 'border-slate-100 text-slate-500'} text-xs`}>
                   <span>Meta ID: {proj.id?.slice(-6)}</span>
-                  <span className="text-purple-400 group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                  <span className="text-purple-500 group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5 font-medium">
                     View <ArrowUpRight className="w-3 h-3" />
                   </span>
                 </div>
@@ -348,28 +349,28 @@ export default function Home() {
         )}
       </div>
 
-      {/* WHAT'S NEW AT NYX? SECTION - Exact match to screenshot */}
+      {/* WHAT'S NEW AT KPILOT? SECTION */}
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-8 pb-16 z-10 relative">
         {/* Section Header with Purple Vertical Indicator */}
         <div className="flex items-center gap-2.5 mb-4">
           <div className="w-1 h-5 bg-[#8b5cf6] rounded-full" />
-          <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight font-sans">
-            What's New at NYX?
+          <h3 className={`text-lg sm:text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'} tracking-tight font-sans`}>
+            What's New at KPILOT?
           </h3>
         </div>
 
         {/* Featured PIXEO Card */}
-        <div className="bg-[#12111d] border border-white/10 hover:border-purple-500/30 rounded-3xl p-6 sm:p-8 lg:p-10 flex flex-col lg:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden group transition-all">
+        <div className={`${isDark ? 'bg-[#12111d] border-white/10 hover:border-purple-500/30' : 'bg-white border-slate-200 shadow-xl hover:border-purple-400'} border rounded-3xl p-6 sm:p-8 lg:p-10 flex flex-col lg:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden group transition-all`}>
           
           {/* Left Text Content */}
           <div className="flex-1 z-10 max-w-xl">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-purple-400 block mb-3 font-mono">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-purple-500 block mb-3 font-mono">
               PIXEO
             </span>
-            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight mb-3 font-sans">
+            <h3 className={`text-2xl sm:text-3xl lg:text-4xl font-bold ${isDark ? 'text-white' : 'text-slate-900'} tracking-tight leading-tight mb-3 font-sans`}>
               Create scroll-stopping ad creatives
             </h3>
-            <p className="text-gray-400 text-sm sm:text-base leading-relaxed mb-6 font-normal">
+            <p className={`${isDark ? 'text-gray-400' : 'text-slate-600'} text-sm sm:text-base leading-relaxed mb-6 font-normal`}>
               Describe what you need and Pixeo generates on-brand ad images in minutes — ready to launch across every channel.
             </p>
             <div className="relative inline-block group/btn">
@@ -377,17 +378,17 @@ export default function Home() {
               <div className="absolute -inset-1 rounded-full bg-purple-600/40 blur-md opacity-70 group-hover/btn:opacity-100 transition-opacity" />
               <button
                 onClick={() => navigate('/processing')}
-                className="relative inline-flex items-center gap-2 bg-[#17152b] hover:bg-[#201d3a] border border-purple-500/50 text-white px-7 py-2.5 rounded-full text-sm font-semibold transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-inner"
+                className={`relative inline-flex items-center gap-2 ${isDark ? 'bg-[#17152b] hover:bg-[#201d3a] border-purple-500/50 text-white' : 'bg-purple-600 hover:bg-purple-700 text-white border-transparent'} border px-7 py-2.5 rounded-full text-sm font-semibold transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md`}
               >
                 <span>Try It Now</span>
-                <span className="text-base font-bold text-purple-300">→</span>
+                <span className="text-base font-bold text-white">→</span>
               </button>
             </div>
           </div>
 
           {/* Right Visual Robot on Bench Image */}
           <div className="w-full lg:w-[460px] shrink-0 z-10 relative">
-            <div className="relative rounded-2xl overflow-hidden border border-purple-500/20 shadow-2xl aspect-[16/10] bg-[#070710] flex items-center justify-center group-hover:border-purple-500/40 transition-all">
+            <div className={`relative rounded-2xl overflow-hidden border ${isDark ? 'border-purple-500/20 bg-[#070710]' : 'border-slate-200 bg-slate-100'} shadow-2xl aspect-[16/10] flex items-center justify-center group-hover:border-purple-500/40 transition-all`}>
               <img 
                 src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=800&auto=format&fit=crop" 
                 alt="PIXEO AI Robot Ad Creative" 
@@ -409,8 +410,8 @@ export default function Home() {
       </div>
 
       {/* Background glow effects */}
-      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-purple-900/15 rounded-full blur-[140px] pointer-events-none"></div>
-      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className={`absolute top-1/4 left-1/4 w-[500px] h-[500px] ${isDark ? 'bg-purple-900/15' : 'bg-purple-200/20'} rounded-full blur-[140px] pointer-events-none`}></div>
+      <div className={`absolute bottom-0 right-1/4 w-[400px] h-[400px] ${isDark ? 'bg-blue-900/10' : 'bg-blue-200/20'} rounded-full blur-[120px] pointer-events-none`}></div>
     </div>
   );
 }

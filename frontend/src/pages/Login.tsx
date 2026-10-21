@@ -89,14 +89,14 @@ export default function Login() {
         {/* Top Toggle */}
         <div className="flex bg-white/5 rounded-full p-1 mb-8 w-max relative z-10">
           <button 
-            onClick={() => setMode('signup')}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${mode === 'signup' ? 'bg-[#2a2a35] text-white' : 'text-gray-400 hover:text-white'}`}
+            onClick={() => setMode('signin')}
+            className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${mode === 'signin' ? 'bg-[#2a2a35] text-white' : 'text-gray-400 hover:text-white'}`}
           >
             Sign in
           </button>
           <button 
-            onClick={() => setMode('signin')}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${mode === 'signin' ? 'bg-[#2a2a35] text-white' : 'text-gray-400 hover:text-white'}`}
+            onClick={() => setMode('signup')}
+            className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${mode === 'signup' ? 'bg-[#2a2a35] text-white' : 'text-gray-400 hover:text-white'}`}
           >
             Sign up
           </button>
@@ -174,7 +174,7 @@ export default function Login() {
             disabled={loading}
             className={`w-full bg-[#5c3cbe] hover:bg-[#4a3299] text-white font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors mt-4 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            {loading ? 'Processing...' : (mode === 'signup' ? 'Sign in' : 'Sign up')} <ArrowRight className="w-4 h-4 ml-1" />
+            {loading ? 'Processing...' : (mode === 'signup' ? 'Create Account' : 'Sign in')} <ArrowRight className="w-4 h-4 ml-1" />
           </button>
         </form>
 
@@ -183,9 +183,9 @@ export default function Login() {
           <button 
             type="button" 
             onClick={() => setMode(mode === 'signup' ? 'signin' : 'signup')} 
-            className="text-white underline hover:text-gray-300 font-medium cursor-pointer"
+            className="text-white underline hover:text-gray-300 font-medium cursor-pointer ml-1"
           >
-            {mode === 'signup' ? 'Sign up' : 'Sign in'}
+            {mode === 'signup' ? 'Sign in' : 'Sign up'}
           </button>
         </p>
 

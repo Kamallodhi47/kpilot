@@ -11,6 +11,7 @@ import LandingPage from './pages/LandingPage';
 import Home from './pages/Home';
 import Onboarding from './pages/Onboarding';
 import MetaCallback from './pages/MetaCallback';
+import Leads from './pages/Leads';
 
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -21,6 +22,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/meta/callback" element={<MetaCallback />} />
           <Route element={<MainLayout />}>
             <Route path="/home" element={<Home />} />
             <Route path="/build" element={<CampaignBuilder />} />
@@ -29,13 +31,13 @@ function App() {
             <Route path="/neo" element={<Neo />} />
             <Route path="/analytics" element={<Neo />} />
             <Route path="/assets" element={<Assets />} />
+            <Route path="/leads" element={<Leads />} />
             <Route path="/campulse" element={<Dashboard defaultTab="campaigns" />} />
             <Route path="/dashboard" element={<Dashboard defaultTab="overview" />} />
             <Route path="/optimise" element={<Dashboard defaultTab="recommendation" />} />
             <Route path="/recommendation" element={<Dashboard defaultTab="recommendation" />} />
             <Route path="/processing" element={<Pixeo />} />
             <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/meta/callback" element={<MetaCallback />} />
             <Route path="/settings" element={<div className="text-white text-2xl font-bold">Settings (Coming Soon)</div>} />
           </Route>
         </Routes>

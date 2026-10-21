@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Megaphone, Gauge, Lightbulb, Image as ImageIcon, Bot, Box, Menu, ChevronDown } from 'lucide-react';
+import { Home, Megaphone, Gauge, Lightbulb, Image as ImageIcon, Bot, Box, Menu, ChevronDown, Moon, Sun, Users } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 export default function MainLayout() {
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
   const location = useLocation();
   const [isLaunchCampaignOpen, setIsLaunchCampaignOpen] = useState(true);
 
@@ -19,6 +22,7 @@ export default function MainLayout() {
       ]
     },
     { name: 'Dashboard', href: '/dashboard', icon: Gauge },
+    { name: 'Leads', href: '/leads', icon: Users },
     { name: 'Optimise', href: '/optimise', icon: Lightbulb },
     { name: 'Pixeo', href: '/pixeo', icon: ImageIcon },
     { name: 'NEO', href: '/neo', icon: Bot },
@@ -26,10 +30,10 @@ export default function MainLayout() {
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0f0f13] text-white font-sans">
+    <div className={`flex h-screen overflow-hidden ${isDark ? 'bg-[#0f0f13] text-white' : 'bg-slate-100 text-slate-900'} font-sans`}>
       
       {/* Sidebar - Hover to expand */}
-      <div className="hidden md:flex flex-col bg-black border-r border-white/5 transition-all duration-300 z-50 h-screen w-[76px] hover:w-64 group overflow-hidden shadow-2xl shrink-0">
+      <div className={`hidden md:flex flex-col ${isDark ? 'bg-black border-white/5' : 'bg-white border-slate-200 shadow-xl'} border-r transition-all duration-300 z-50 h-screen w-[76px] hover:w-64 group overflow-hidden shrink-0`}>
         
         {/* Logo Section */}
         <div className="flex items-center h-28 px-4 whitespace-nowrap overflow-hidden shrink-0 gap-4 transition-all duration-300 pl-[14px]">
@@ -58,7 +62,7 @@ export default function MainLayout() {
               <path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9L12 2Z" />
             </svg>
           </div>
-          <span className="font-bold text-xl tracking-wider text-slate-900 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">PILOT</span>
+          <span className={`font-bold text-xl tracking-wider ${isDark ? 'text-white' : 'text-slate-900'} opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100`}>PILOT</span>
         </div>
 
         {/* Navigation */}
@@ -74,27 +78,27 @@ export default function MainLayout() {
                     <div
                       onClick={() => setIsLaunchCampaignOpen(!isLaunchCampaignOpen)}
                       className={`
-                        flex items-center justify-between py-3 px-3.5 font-semibold rounded-xl transition-all whitespace-nowrap cursor-pointer
+                        flex items-center justify-between py-3 px-3.5 font-semibold rounded-xl transition-all whitespace-nowrap cursor-pointer overflow-hidden
                         ${isParentActive 
                           ? 'nav-item-active bg-[#7c3aed] text-white shadow-lg shadow-purple-500/25' 
-                          : 'text-slate-700 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'}
+                          : isDark ? 'text-gray-300 hover:text-white hover:bg-white/5' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100'}
                       `}
                     >
                       <div className="flex items-center">
                         <item.icon
-                          className={`flex-shrink-0 h-[22px] w-[22px] transition-transform ${isParentActive ? 'text-white' : 'text-slate-600 dark:text-gray-300'}`}
+                          className={`flex-shrink-0 h-[22px] w-[22px] transition-transform ${isParentActive ? 'text-white' : isDark ? 'text-gray-300' : 'text-slate-600'}`}
                           strokeWidth={isParentActive ? 2.5 : 2}
                         />
-                        <span className="ml-4 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75">
+                        <span className="ml-4 text-base font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75">
                           {item.name}
                         </span>
                       </div>
                       <ChevronDown className={`w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-300 ${isLaunchCampaignOpen ? 'rotate-180' : ''}`} />
                     </div>
 
-                    {/* Tree Dropdown Children (Matching screenshot tree connector style) */}
+                    {/* Tree Dropdown Children */}
                     {isLaunchCampaignOpen && (
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 pl-6 mt-1.5 space-y-1 relative before:absolute before:left-5 before:top-0 before:bottom-3 before:w-[1.5px] before:bg-slate-300 dark:before:bg-white/20">
+                      <div className={`opacity-0 group-hover:opacity-100 transition-opacity duration-300 pl-6 mt-1.5 space-y-1 relative before:absolute before:left-5 before:top-0 before:bottom-3 before:w-[1.5px] ${isDark ? 'before:bg-white/20' : 'before:bg-slate-300'}`}>
                         {item.children.map((child) => {
                           const isChildActive = location.pathname === child.href || (child.alias && location.pathname === child.alias);
                           
@@ -102,15 +106,14 @@ export default function MainLayout() {
                             <Link
                               key={child.name}
                               to={child.href}
-                              className="flex items-center relative py-1 text-sm group/child whitespace-nowrap pl-3"
+                              className="flex items-center relative py-1 text-base group/child whitespace-nowrap pl-3"
                             >
-                              {/* Horizontal connector branch */}
-                              <span className={`absolute -left-1 w-3 h-[1.5px] ${isChildActive ? 'bg-[#7c3aed]' : 'bg-slate-300 dark:bg-white/20'}`} />
+                              <span className={`absolute -left-1 w-3 h-[1.5px] ${isChildActive ? 'bg-[#7c3aed]' : isDark ? 'bg-white/20' : 'bg-slate-300'}`} />
                               
-                              <div className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition-all w-full ${
+                              <div className={`px-3 py-1.5 rounded-xl text-sm sm:text-base font-semibold transition-all w-full overflow-hidden ${
                                 isChildActive 
                                   ? 'nav-item-active bg-[#7c3aed] text-white shadow-md shadow-purple-500/25' 
-                                  : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                                  : isDark ? 'text-gray-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                               }`}>
                                 {child.name}
                               </div>
@@ -130,17 +133,17 @@ export default function MainLayout() {
                   key={item.name}
                   to={item.href}
                   className={`
-                    flex items-center py-3 px-3.5 font-semibold rounded-xl transition-all whitespace-nowrap
+                    flex items-center py-3 px-3.5 font-semibold rounded-xl transition-all whitespace-nowrap overflow-hidden
                     ${isActive 
                       ? 'nav-item-active bg-[#7c3aed] text-white shadow-lg shadow-purple-500/25' 
-                      : 'text-slate-700 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'}
+                      : isDark ? 'text-gray-300 hover:text-white hover:bg-white/5' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100'}
                   `}
                 >
                   <item.icon
-                    className={`flex-shrink-0 h-[22px] w-[22px] transition-transform ${isActive ? 'text-white' : 'text-slate-600 dark:text-gray-300'}`}
+                    className={`flex-shrink-0 h-[22px] w-[22px] transition-transform ${isActive ? 'text-white' : isDark ? 'text-gray-300' : 'text-slate-600'}`}
                     strokeWidth={isActive ? 2.5 : 2}
                   />
-                  <span className={`ml-4 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75`}>
+                  <span className={`ml-4 text-base font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75`}>
                     {item.name}
                   </span>
                 </Link>
@@ -148,12 +151,32 @@ export default function MainLayout() {
             })}
           </nav>
         </div>
+
+        {/* Theme Toggle Button in Sidebar Footer */}
+        <div className={`p-3 border-t ${isDark ? 'border-white/10' : 'border-slate-200'} shrink-0`}>
+          <button
+            onClick={toggleTheme}
+            className={`flex items-center w-full py-2.5 px-3 rounded-xl transition-all cursor-pointer overflow-hidden ${
+              isDark 
+                ? 'bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white' 
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-950 shadow-sm'
+            }`}
+            title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          >
+            <div className="flex-shrink-0">
+              {isDark ? <Moon className="h-5 w-5 text-purple-400" /> : <Sun className="h-5 w-5 text-amber-500" />}
+            </div>
+            <span className="ml-4 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+              {isDark ? 'Dark Mode' : 'Light Mode'}
+            </span>
+          </button>
+        </div>
       </div>
 
-      {/* Main content (Margin left to accommodate collapsed sidebar) */}
-      <div className="flex flex-col flex-1 w-0 overflow-hidden bg-[#0f0f13] transition-all duration-300">
+      {/* Main content */}
+      <div className={`flex flex-col flex-1 w-0 overflow-hidden ${isDark ? 'bg-[#0f0f13]' : 'bg-slate-100'} transition-all duration-300`}>
         {/* Mobile Header */}
-        <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-black border-b border-gray-200 dark:border-white/5">
+        <div className={`md:hidden flex items-center justify-between p-4 ${isDark ? 'bg-black border-white/5' : 'bg-white border-slate-200 shadow-sm'} border-b`}>
           <div className="flex items-center gap-2.5">
             <div 
               className="kpilot-logo-badge w-8 h-8 rounded-lg flex items-center justify-center relative shadow-md shrink-0"
@@ -180,11 +203,20 @@ export default function MainLayout() {
                 <path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9L12 2Z" />
               </svg>
             </div>
-            <span className="font-bold text-lg tracking-wider text-slate-900 dark:text-white">PILOT</span>
+            <span className={`font-bold text-lg tracking-wider ${isDark ? 'text-white' : 'text-slate-900'}`}>PILOT</span>
           </div>
-          <button className="text-slate-800 dark:text-white hover:bg-black/5 dark:hover:bg-white/10 p-2 rounded-md">
-            <Menu className="h-6 w-6" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={toggleTheme}
+              className={`p-2 rounded-lg ${isDark ? 'text-gray-300 hover:bg-white/10' : 'text-slate-700 hover:bg-slate-200'}`}
+              title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+            >
+              {isDark ? <Moon className="w-5 h-5 text-purple-400" /> : <Sun className="w-5 h-5 text-amber-500" />}
+            </button>
+            <button className={`p-2 rounded-md ${isDark ? 'text-white hover:bg-white/10' : 'text-slate-800 hover:bg-slate-100'}`}>
+              <Menu className="h-6 w-6" />
+            </button>
+          </div>
         </div>
         
         <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none">
@@ -194,6 +226,7 @@ export default function MainLayout() {
             location.pathname === "/pixeo" || 
             location.pathname === "/neo" || 
             location.pathname === "/analytics" || 
+            location.pathname === "/leads" || 
             location.pathname === "/processing" 
               ? "h-full w-full" 
               : "p-4 sm:p-6 md:p-8 h-full"

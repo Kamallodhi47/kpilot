@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, Button, Badge } from './ui';
-import { Globe, Camera, ShieldCheck, Activity, CheckCircle2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, Button } from './ui';
+import { Globe, Camera, ShieldCheck, Activity, CheckCircle2, LogOut } from 'lucide-react';
+import { MetaConnectModal } from './MetaConnectModal';
 
 export function MetaConnectCard() {
   const [isConnected, setIsConnected] = useState(false);
   const [accountName, setAccountName] = useState<string | null>(null);
   const [adAccounts, setAdAccounts] = useState<any[]>([]);
+  const [selectedAdAccount, setSelectedAdAccount] = useState<string>('');
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,35 +24,68 @@ export function MetaConnectCard() {
           setIsConnected(true);
           setAccountName(data.account_name);
           setAdAccounts(data.ad_accounts || []);
+          if (data.selected_ad_account_id) {
+            setSelectedAdAccount(data.selected_ad_account_id);
+          } else if (data.ad_accounts && data.ad_accounts.length > 0) {
+            setSelectedAdAccount(data.ad_accounts[0].id);
+          }
         }
       })
       .catch(err => console.error(err));
   }, []);
 
-  const handleConnect = async () => {
+  const handleOAuthConnect = async () => {
     setIsConnecting(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/meta/connect', { 
+      const res = await fetch('/api/meta/oauth/start', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      const data = await res.json();
+      if (res.ok && data.auth_url) {
+        window.location.href = data.auth_url;
+      } else {
+        alert(data.detail || data.message || 'Failed to start Meta OAuth');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Unable to connect to OAuth service');
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const handleSelectAccount = async (accId: string) => {
+    setSelectedAdAccount(accId);
+    try {
+      const token = localStorage.getItem('token');
+      await fetch('/api/meta/select-account', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        }
+        },
+        body: JSON.stringify({ ad_account_id: accId })
       });
-      const data = await res.json();
-      if (res.ok && (data.success || data.connected)) {
-        setIsConnected(true);
-        setAccountName(data.account_name);
-        setAdAccounts(data.ad_accounts || []);
-        navigate('/onboarding');
-      } else {
-        console.error('Failed to connect Meta:', data);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsConnecting(false);
+    } catch (e) {
+      console.error('Failed to select ad account:', e);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    if (!window.confirm("Are you sure you want to disconnect your Meta account?")) return;
+    try {
+      const token = localStorage.getItem('token');
+      await fetch('/api/meta/disconnect', {
+        method: 'POST',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      setIsConnected(false);
+      setAccountName(null);
+      setAdAccounts([]);
+      setSelectedAdAccount('');
+    } catch (e) {
+      console.error('Failed to disconnect Meta:', e);
     }
   };
 
@@ -58,7 +94,7 @@ export function MetaConnectCard() {
       <Card className="border-blue-200 shadow-sm shadow-blue-500/10 mb-6 bg-blue-50/50">
         <CardContent className="p-8 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-6">
           <div className="flex items-center gap-6">
-            <div className="h-16 w-16 bg-blue-600 rounded-2xl flex items-center justify-center shrink-0 shadow-md">
+            <div className="h-16 w-16 bg-[#1877F2] rounded-2xl flex items-center justify-center shrink-0 shadow-md">
               <Globe className="h-8 w-8 text-white" />
             </div>
             <div>
@@ -66,14 +102,35 @@ export function MetaConnectCard() {
               <p className="text-slate-600 font-medium">Connect your Meta account to create, manage, and analyze your ad campaigns with AI.</p>
             </div>
           </div>
-          <Button 
-            onClick={handleConnect} 
-            disabled={isConnecting}
-            className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6"
-          >
-            {isConnecting ? 'Connecting...' : 'Connect Meta Ads'}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button 
+              onClick={handleOAuthConnect} 
+              disabled={isConnecting}
+              className="shrink-0 bg-[#1877F2] hover:bg-[#166fe5] text-white font-bold py-2.5 px-6 cursor-pointer"
+            >
+              {isConnecting ? 'Connecting...' : 'Connect Meta Ads'}
+            </Button>
+            <Button 
+              onClick={() => setIsModalOpen(true)}
+              variant="outline"
+              className="shrink-0 text-slate-700 font-semibold py-2.5 px-4 cursor-pointer"
+            >
+              Manual ID
+            </Button>
+          </div>
         </CardContent>
+        <MetaConnectModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={(data) => {
+            setIsConnected(true);
+            setAccountName(data.account_name);
+            setAdAccounts(data.ad_accounts || []);
+            if (data.selected_ad_account_id) {
+              setSelectedAdAccount(data.selected_ad_account_id);
+            }
+          }}
+        />
       </Card>
     );
   }
@@ -83,11 +140,21 @@ export function MetaConnectCard() {
       <CardHeader className="border-b border-slate-100 flex flex-row items-center justify-between py-4">
         <div className="flex items-center gap-2">
           <Globe className="h-6 w-6 text-blue-600" />
-          <h2 className="text-lg font-bold text-slate-900">Meta Integration</h2>
+          <h2 className="text-lg font-bold text-slate-900">
+            Meta Integration ({accountName || 'Connected'})
+          </h2>
         </div>
-        <div className="flex items-center text-green-700 bg-green-50 px-3 py-1.5 rounded-full border border-green-200">
-          <CheckCircle2 className="w-4 h-4 mr-1.5" />
-          <span className="text-sm font-bold">Meta Connected</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center text-green-700 bg-green-50 px-3 py-1.5 rounded-full border border-green-200">
+            <CheckCircle2 className="w-4 h-4 mr-1.5" />
+            <span className="text-sm font-bold">Meta Connected</span>
+          </div>
+          <button
+            onClick={handleDisconnect}
+            className="text-xs text-rose-500 hover:text-rose-700 flex items-center gap-1 font-semibold border border-rose-200 bg-rose-50 px-2.5 py-1 rounded-lg cursor-pointer transition-colors"
+          >
+            <LogOut className="w-3 h-3" /> Disconnect
+          </button>
         </div>
       </CardHeader>
       <CardContent className="p-6">
@@ -97,9 +164,20 @@ export function MetaConnectCard() {
             <label className="flex items-center text-xs font-bold text-slate-500 uppercase tracking-wider">
               <ShieldCheck className="w-4 h-4 mr-1.5" /> Ad Account
             </label>
-            <select className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm font-semibold rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
-              <option>My Business Ad Account</option>
-              <option>AdPilot Agency Account</option>
+            <select
+              value={selectedAdAccount}
+              onChange={(e) => handleSelectAccount(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm font-semibold rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+            >
+              {adAccounts.length === 0 ? (
+                <option value="">No Ad Accounts</option>
+              ) : (
+                adAccounts.map((acc: any) => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.name ? `${acc.name} (${acc.id})` : acc.id} {acc.currency ? `[${acc.currency}]` : ''}
+                  </option>
+                ))
+              )}
             </select>
           </div>
 
