@@ -38,11 +38,15 @@ export default function Login() {
       if (!res.ok) {
         let errMsg = 'Authentication failed';
         try {
-          const errData = await res.json();
-          errMsg = errData.detail || errData.message || errMsg;
-        } catch {
           const rawText = await res.text();
-          errMsg = rawText || errMsg;
+          try {
+            const errData = JSON.parse(rawText);
+            errMsg = errData.detail || errData.message || errMsg;
+          } catch {
+            errMsg = rawText || errMsg;
+          }
+        } catch {
+          // fallback
         }
         throw new Error(errMsg);
       }
