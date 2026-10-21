@@ -34,22 +34,27 @@ export function MetaConnectCard() {
       .catch(err => console.error(err));
   }, []);
 
-  const handleOAuthConnect = async () => {
+  const handleConnect = async () => {
     setIsConnecting(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/meta/oauth/start', {
+      const res = await fetch('/api/meta/connect', {
+        method: 'POST',
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       const data = await res.json();
-      if (res.ok && data.auth_url) {
-        window.location.href = data.auth_url;
-      } else {
-        alert(data.detail || data.message || 'Failed to start Meta OAuth');
+      if (res.ok && data.success) {
+        setIsConnected(true);
+        setAccountName(data.account_name);
+        setAdAccounts(data.ad_accounts || []);
+        if (data.selected_ad_account_id) {
+          setSelectedAdAccount(data.selected_ad_account_id);
+        }
+        return;
       }
+      setIsModalOpen(true);
     } catch (err) {
-      console.error(err);
-      alert('Unable to connect to OAuth service');
+      setIsModalOpen(true);
     } finally {
       setIsConnecting(false);
     }
@@ -104,7 +109,7 @@ export function MetaConnectCard() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button 
-              onClick={handleOAuthConnect} 
+              onClick={handleConnect} 
               disabled={isConnecting}
               className="shrink-0 bg-[#1877F2] hover:bg-[#166fe5] text-white font-bold py-2.5 px-6 cursor-pointer"
             >

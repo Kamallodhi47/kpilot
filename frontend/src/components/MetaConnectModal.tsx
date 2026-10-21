@@ -41,6 +41,32 @@ export function MetaConnectModal({ isOpen, onClose, onSuccess }: MetaConnectModa
 
   if (!isOpen) return null;
 
+  const handleQuickConnect = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const authToken = localStorage.getItem('token');
+      const res = await fetch('/api/meta/connect', {
+        method: 'POST',
+        headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSuccessData(data);
+        setTimeout(() => {
+          onSuccess(data);
+          onClose();
+        }, 1200);
+      } else {
+        setError(data.detail || data.message || 'Direct connect nahi ho paaya.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Server connection error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleOAuthConnect = async () => {
     setIsLoading(true);
     setError(null);
@@ -169,23 +195,36 @@ export function MetaConnectModal({ isOpen, onClose, onSuccess }: MetaConnectModa
                 </div>
               )}
 
-              {/* 1-Click Official Meta OAuth Button */}
-              <div className="pt-1">
+              {/* Quick Connect & OAuth Options */}
+              <div className="space-y-2 pt-1">
+                {/* 1-Click System Quick Connect */}
+                <button
+                  type="button"
+                  onClick={handleQuickConnect}
+                  disabled={isLoading}
+                  className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2.5 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  <Sparkles className="w-4 h-4 text-emerald-200 shrink-0" />
+                  Quick Connect System Account (Kamal Lodhi - 560854715006518)
+                </button>
+
+                {/* 1-Click Official Meta OAuth Button */}
                 <button
                   type="button"
                   onClick={handleOAuthConnect}
                   disabled={isLoading}
-                  className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-[#1877F2] to-[#3b5998] hover:opacity-95 text-white text-xs font-bold shadow-md shadow-blue-500/20 flex items-center justify-center gap-2.5 transition-all cursor-pointer disabled:opacity-50"
+                  className="w-full py-2.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                 >
-                  <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 fill-[#1877F2] shrink-0" viewBox="0 0 24 24">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                   </svg>
-                  Connect with Meta (Instant OAuth)
+                  Connect via Facebook Login (OAuth)
                 </button>
-                <div className="relative my-3.5">
+
+                <div className="relative my-3">
                   <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200" /></div>
                   <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider text-slate-400 bg-white px-3">
-                    Or connect with Account ID
+                    Or connect with your Custom Account ID
                   </div>
                 </div>
               </div>
