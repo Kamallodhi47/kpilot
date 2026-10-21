@@ -25,32 +25,45 @@ else:
 Base.metadata.create_all(bind=engine)
 
 def run_db_migrations():
-    """Ensure all required columns exist in SQLite database without losing data."""
+    """Ensure all required columns exist in SQLite or PostgreSQL without losing data."""
     try:
+        is_sqlite = engine.url.drivername.startswith("sqlite")
         with engine.connect() as conn:
-            result = conn.execute(text("PRAGMA table_info(users)"))
-            columns = [row[1] for row in result.fetchall()]
-            
-            if "meta_access_token" not in columns:
-                conn.execute(text("ALTER TABLE users ADD COLUMN meta_access_token VARCHAR"))
-            if "meta_account_id" not in columns:
-                conn.execute(text("ALTER TABLE users ADD COLUMN meta_account_id VARCHAR"))
-            if "meta_account_name" not in columns:
-                conn.execute(text("ALTER TABLE users ADD COLUMN meta_account_name VARCHAR"))
-            if "selected_ad_account_id" not in columns:
-                conn.execute(text("ALTER TABLE users ADD COLUMN selected_ad_account_id VARCHAR"))
-            if "selected_ad_account_name" not in columns:
-                conn.execute(text("ALTER TABLE users ADD COLUMN selected_ad_account_name VARCHAR"))
-            
-            # Check leads table columns
-            result_leads = conn.execute(text("PRAGMA table_info(leads)"))
-            lead_cols = [row[1] for row in result_leads.fetchall()]
-            if "lead_type" not in lead_cols:
-                conn.execute(text("ALTER TABLE leads ADD COLUMN lead_type VARCHAR DEFAULT 'Lead Form'"))
-            if "message_text" not in lead_cols:
-                conn.execute(text("ALTER TABLE leads ADD COLUMN message_text TEXT"))
-            if "instagram_username" not in lead_cols:
-                conn.execute(text("ALTER TABLE leads ADD COLUMN instagram_username VARCHAR"))
+            if is_sqlite:
+                result = conn.execute(text("PRAGMA table_info(users)"))
+                columns = [row[1] for row in result.fetchall()]
+                
+                if "meta_access_token" not in columns:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN meta_access_token VARCHAR"))
+                if "meta_account_id" not in columns:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN meta_account_id VARCHAR"))
+                if "meta_account_name" not in columns:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN meta_account_name VARCHAR"))
+                if "selected_ad_account_id" not in columns:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN selected_ad_account_id VARCHAR"))
+                if "selected_ad_account_name" not in columns:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN selected_ad_account_name VARCHAR"))
+                
+                # Check leads table columns
+                result_leads = conn.execute(text("PRAGMA table_info(leads)"))
+                lead_cols = [row[1] for row in result_leads.fetchall()]
+                if "lead_type" not in lead_cols:
+                    conn.execute(text("ALTER TABLE leads ADD COLUMN lead_type VARCHAR DEFAULT 'Lead Form'"))
+                if "message_text" not in lead_cols:
+                    conn.execute(text("ALTER TABLE leads ADD COLUMN message_text TEXT"))
+                if "instagram_username" not in lead_cols:
+                    conn.execute(text("ALTER TABLE leads ADD COLUMN instagram_username VARCHAR"))
+            else:
+                # PostgreSQL supports ADD COLUMN IF NOT EXISTS directly!
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS meta_access_token VARCHAR;"))
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS meta_account_id VARCHAR;"))
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS meta_account_name VARCHAR;"))
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS selected_ad_account_id VARCHAR;"))
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS selected_ad_account_name VARCHAR;"))
+                
+                conn.execute(text("ALTER TABLE leads ADD COLUMN IF NOT EXISTS lead_type VARCHAR DEFAULT 'Lead Form';"))
+                conn.execute(text("ALTER TABLE leads ADD COLUMN IF NOT EXISTS message_text TEXT;"))
+                conn.execute(text("ALTER TABLE leads ADD COLUMN IF NOT EXISTS instagram_username VARCHAR;"))
             
             conn.commit()
     except Exception as e:
