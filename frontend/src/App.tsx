@@ -12,6 +12,7 @@ import Home from './pages/Home';
 import Onboarding from './pages/Onboarding';
 import MetaCallback from './pages/MetaCallback';
 import Leads from './pages/Leads';
+import DataSecurity from './pages/DataSecurity';
 
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -21,6 +22,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/data-security" element={<DataSecurity />} />
           <Route path="/login" element={<Login />} />
           <Route path="/meta/callback" element={<MetaCallback />} />
           <Route element={<MainLayout />}>
