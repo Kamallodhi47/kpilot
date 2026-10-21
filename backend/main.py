@@ -792,7 +792,7 @@ def disconnect_meta(current_user: User = Depends(get_current_user), db: Session 
 @app.get("/api/meta/oauth/start")
 def oauth_start(current_user: User = Depends(get_current_user)):
     """Generate Facebook OAuth URL with cryptographic CSRF state token and requested permissions."""
-    fb_app_id = os.getenv("FB_APP_ID", "2603357056765357").strip()
+    fb_app_id = os.getenv("FB_APP_ID", "1603282457939716").strip()
     if not fb_app_id or fb_app_id == "YOUR_APP_ID_HERE":
         raise HTTPException(status_code=500, detail="FB_APP_ID is not configured in backend/.env")
         
@@ -836,7 +836,7 @@ def oauth_callback(request: OAuthCallbackRequest, current_user: User = Depends(g
                 detail="OAuth CSRF state validation failed or expired. Please re-initiate connection."
             )
             
-    fb_app_id = os.getenv("FB_APP_ID", "2603357056765357").strip()
+    fb_app_id = os.getenv("FB_APP_ID", "1603282457939716").strip()
     fb_app_secret = os.getenv("FB_APP_SECRET", "").strip()
     if not fb_app_id or not fb_app_secret or fb_app_secret == "YOUR_APP_SECRET_HERE":
         raise HTTPException(
