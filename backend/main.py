@@ -315,114 +315,57 @@ def get_current_user_profile(current_user: Optional[User] = Depends(get_optional
 
 @app.get("/api/meta/status")
 def get_meta_status(current_user: Optional[User] = Depends(get_optional_user), db: Session = Depends(get_db)):
-    # 1. If an authenticated user is logged in
-    if current_user:
-        user_token = current_user.meta_access_token
-        # Fallback to system env token ONLY for admin (user id 1) if not set yet
-        if not user_token and current_user.id == 1:
-            env_token = os.getenv("META_ACCESS_TOKEN", "").strip()
-            if env_token:
-                user_token = env_token
-                current_user.meta_access_token = env_token
-                db.commit()
-
-        if user_token:
-            details = fetch_meta_details(user_token)
-            
-            # Check for expired or revoked token
-            if details.get("token_expired"):
-                return {
-                    "connected": False,
-                    "token_expired": True,
-                    "error": "Your Meta authorization has expired or was revoked. Please reconnect.",
-                    "email": current_user.email,
-                    "account_name": current_user.meta_account_name,
-                    "account_id": current_user.meta_account_id,
-                    "ad_accounts": [],
-                    "selected_ad_account_id": None,
-                    "selected_ad_account_name": None
-                }
-            
-            live_ad_accounts = details.get("ad_accounts", [])
-            selected_id = current_user.selected_ad_account_id
-            selected_name = current_user.selected_ad_account_name
-            
-            # If user has ad accounts and hasn't selected one yet, default to first
-            if live_ad_accounts and not selected_id:
-                selected_id = live_ad_accounts[0]["id"]
-                selected_name = live_ad_accounts[0].get("name", selected_id)
-                current_user.selected_ad_account_id = selected_id
-                current_user.selected_ad_account_name = selected_name
-                if not current_user.meta_account_id:
-                    current_user.meta_account_id = details.get("account_id")
-                if not current_user.meta_account_name:
-                    current_user.meta_account_name = details.get("account_name")
-                db.commit()
-                
-            return {
-                "connected": True,
-                "token_expired": False,
-                "email": current_user.email,
-                "account_name": details.get("account_name") or current_user.meta_account_name,
-                "account_id": current_user.meta_account_id or details.get("account_id"),
-                "ad_accounts": live_ad_accounts,
-                "selected_ad_account_id": selected_id,
-                "selected_ad_account_name": selected_name
-            }
-        else:
+    # 1. If an authenticated user is logged in and has connected their Meta account
+    if current_user and current_user.meta_access_token:
+        user_token = current_user.meta_access_token.strip()
+        details = fetch_meta_details(user_token)
+        
+        # Check for expired or revoked token
+        if details.get("token_expired"):
             return {
                 "connected": False,
-                "token_expired": False,
+                "token_expired": True,
+                "error": "Your Meta authorization has expired or was revoked. Please reconnect.",
                 "email": current_user.email,
-                "account_name": None,
-                "account_id": None,
+                "account_name": current_user.meta_account_name,
+                "account_id": current_user.meta_account_id,
                 "ad_accounts": [],
                 "selected_ad_account_id": None,
                 "selected_ad_account_name": None
             }
-
-    # 2. Unauthenticated / guest state: Check active_connected_meta or system token
-    global active_connected_meta
-    if active_connected_meta.get("connected"):
+        
+        live_ad_accounts = details.get("ad_accounts", [])
+        selected_id = current_user.selected_ad_account_id
+        selected_name = current_user.selected_ad_account_name
+        
+        # If user has ad accounts and hasn't selected one yet, default to first
+        if live_ad_accounts and not selected_id:
+            selected_id = live_ad_accounts[0]["id"]
+            selected_name = live_ad_accounts[0].get("name", selected_id)
+            current_user.selected_ad_account_id = selected_id
+            current_user.selected_ad_account_name = selected_name
+            if not current_user.meta_account_id:
+                current_user.meta_account_id = details.get("account_id")
+            if not current_user.meta_account_name:
+                current_user.meta_account_name = details.get("account_name")
+            db.commit()
+            
         return {
             "connected": True,
             "token_expired": False,
-            "email": active_connected_meta.get("email"),
-            "account_name": active_connected_meta.get("account_name"),
-            "account_id": active_connected_meta.get("account_id"),
-            "ad_accounts": [{
-                "id": active_connected_meta.get("selected_ad_account_id"),
-                "name": active_connected_meta.get("selected_ad_account_name"),
-                "account_id": active_connected_meta.get("account_id"),
-                "account_status": active_connected_meta.get("status_code", 1),
-                "currency": active_connected_meta.get("currency", "INR")
-            }],
-            "selected_ad_account_id": active_connected_meta.get("selected_ad_account_id"),
-            "selected_ad_account_name": active_connected_meta.get("selected_ad_account_name")
+            "email": current_user.email,
+            "account_name": details.get("account_name") or current_user.meta_account_name,
+            "account_id": current_user.meta_account_id or details.get("account_id"),
+            "ad_accounts": live_ad_accounts,
+            "selected_ad_account_id": selected_id,
+            "selected_ad_account_name": selected_name
         }
 
-    env_token = os.getenv("META_ACCESS_TOKEN", "").strip()
-    if env_token:
-        details = fetch_meta_details(env_token)
-        if not details.get("token_expired") and (details.get("account_id") or details.get("account_name")):
-            live_ad_accounts = details.get("ad_accounts", [])
-            selected_id = live_ad_accounts[0]["id"] if live_ad_accounts else None
-            selected_name = live_ad_accounts[0]["name"] if live_ad_accounts else details.get("account_name")
-            return {
-                "connected": True,
-                "token_expired": False,
-                "email": "connected@meta.com",
-                "account_name": details.get("account_name"),
-                "account_id": details.get("account_id"),
-                "ad_accounts": live_ad_accounts,
-                "selected_ad_account_id": selected_id,
-                "selected_ad_account_name": selected_name
-            }
-
+    # 2. Unauthenticated or user hasn't connected Meta yet: ALWAYS default to Disconnected
     return {
         "connected": False,
         "token_expired": False,
-        "email": None,
+        "email": current_user.email if current_user else None,
         "account_name": None,
         "account_id": None,
         "ad_accounts": [],
