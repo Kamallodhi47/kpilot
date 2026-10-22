@@ -26,9 +26,9 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql+psycopg2://admin:password123@db:5432/kpilotdb
-      META_ACCESS_TOKEN: EAAWyLUlhTwQBS1Mp9XIDSGcgfGYbaqpENLUDZCqBCd81svZAJ6LGDT9XCT8clDvV8A5WwMXXxbK84F5ddoUSlqYhkXjrfrHExxPCZCgQSdA8W1GSGatggqzIkpziKVO7klsP87gABaxz40DfGYOhdkPtFDU9tFgbq7W4uB0Ca7wVhKTCVGqUNznQvbmKWHxcsG5mhDX
+      META_ACCESS_TOKEN: EAAWyLUlhTwQBS1LW7AfSZCLLMBszfl4aVUl5Olr0cKINwEuGD2qqm8Ju80XtCzJh4DNokRojZATXrKRFvZAX4oS1qTepeDF2lIk9wAjxbfBgAhndlE7nNtyzY6cD6R0ovAZAGFRTPUeW9ZC4ZAGT3KPlTEEDlKcAXZAbW5ZCkKvgvjrjYQfqbsVMZCPsWZAZCxjCpmeUuOr
       FB_APP_ID: 1603282457939716
-      FB_APP_SECRET: YOUR_APP_SECRET_HERE
+      FB_APP_SECRET: a15d301ddc7f99af095d8ef2f2eb5b6d
       FRONTEND_URL: https://adds.proteinsolution.in
     depends_on:
       db:

@@ -18,9 +18,9 @@ from jose import JWTError, jwt
 
 dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
 if os.path.exists(dotenv_path):
-    load_dotenv(dotenv_path=dotenv_path)
+    load_dotenv(dotenv_path=dotenv_path, override=True)
 else:
-    load_dotenv()
+    load_dotenv(override=True)
 
 Base.metadata.create_all(bind=engine)
 
@@ -318,8 +318,8 @@ def get_meta_status(current_user: Optional[User] = Depends(get_optional_user), d
     # 1. If an authenticated user is logged in
     if current_user:
         user_token = current_user.meta_access_token
-        # Fallback to system env token if user hasn't explicitly set one
-        if not user_token:
+        # Fallback to system env token ONLY for admin (user id 1) if not set yet
+        if not user_token and current_user.id == 1:
             env_token = os.getenv("META_ACCESS_TOKEN", "").strip()
             if env_token:
                 user_token = env_token
@@ -864,7 +864,7 @@ def oauth_start(current_user: User = Depends(get_current_user)):
         params["config_id"] = config_id
     else:
         # Standard Marketing API OAuth flow with required scopes
-        params["scope"] = "ads_read,ads_management,business_management,public_profile"
+        params["scope"] = "ads_read,ads_management,read_insights,business_management,public_profile"
         
     query_string = urllib.parse.urlencode(params)
     auth_url = f"https://www.facebook.com/v19.0/dialog/oauth?{query_string}"
