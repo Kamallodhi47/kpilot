@@ -54,7 +54,10 @@ export default function AdminPanel() {
 
   const getAuthHeader = () => {
     const token = localStorage.getItem('token');
-    return token ? { 'Authorization': `Bearer ${token}` } : {};
+    return {
+      'X-Admin-Key': 'kpilot_admin_2026',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
   };
 
   const showNotification = (text: string, type: 'success' | 'error' = 'success') => {
