@@ -14,6 +14,7 @@ import MetaCallback from './pages/MetaCallback';
 import Leads from './pages/Leads';
 import DataSecurity from './pages/DataSecurity';
 import Privacy from './pages/Privacy';
+import AdminPanel from './pages/AdminPanel';
 
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -36,6 +37,7 @@ function App() {
             <Route path="/analytics" element={<Neo />} />
             <Route path="/assets" element={<Assets />} />
             <Route path="/leads" element={<Leads />} />
+            <Route path="/admin" element={<AdminPanel />} />
             <Route path="/campulse" element={<Dashboard defaultTab="campaigns" />} />
             <Route path="/dashboard" element={<Dashboard defaultTab="overview" />} />
             <Route path="/optimise" element={<Dashboard defaultTab="recommendation" />} />

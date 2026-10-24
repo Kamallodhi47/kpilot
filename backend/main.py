@@ -43,6 +43,10 @@ def run_db_migrations():
                     conn.execute(text("ALTER TABLE users ADD COLUMN selected_ad_account_id VARCHAR"))
                 if "selected_ad_account_name" not in columns:
                     conn.execute(text("ALTER TABLE users ADD COLUMN selected_ad_account_name VARCHAR"))
+                if "is_admin" not in columns:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT 0"))
+                if "is_active" not in columns:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN is_active BOOLEAN DEFAULT 1"))
                 
                 # Check leads table columns
                 result_leads = conn.execute(text("PRAGMA table_info(leads)"))
@@ -53,6 +57,12 @@ def run_db_migrations():
                     conn.execute(text("ALTER TABLE leads ADD COLUMN message_text TEXT"))
                 if "instagram_username" not in lead_cols:
                     conn.execute(text("ALTER TABLE leads ADD COLUMN instagram_username VARCHAR"))
+
+                # Set first user or admin emails as admin
+                try:
+                    conn.execute(text("UPDATE users SET is_admin = 1 WHERE email LIKE '%admin%' OR id = (SELECT MIN(id) FROM users)"))
+                except Exception:
+                    pass
             else:
                 # PostgreSQL supports ADD COLUMN IF NOT EXISTS directly!
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS meta_access_token VARCHAR;"))
@@ -60,10 +70,17 @@ def run_db_migrations():
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS meta_account_name VARCHAR;"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS selected_ad_account_id VARCHAR;"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS selected_ad_account_name VARCHAR;"))
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;"))
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;"))
                 
                 conn.execute(text("ALTER TABLE leads ADD COLUMN IF NOT EXISTS lead_type VARCHAR DEFAULT 'Lead Form';"))
                 conn.execute(text("ALTER TABLE leads ADD COLUMN IF NOT EXISTS message_text TEXT;"))
                 conn.execute(text("ALTER TABLE leads ADD COLUMN IF NOT EXISTS instagram_username VARCHAR;"))
+
+                try:
+                    conn.execute(text("UPDATE users SET is_admin = TRUE WHERE email LIKE '%admin%' OR id = (SELECT MIN(id) FROM users);"))
+                except Exception:
+                    pass
             
             conn.commit()
     except Exception as e:
@@ -375,11 +392,16 @@ def get_current_user_profile(current_user: Optional[User] = Depends(get_optional
     display_name = local_part.replace(".", " ").replace("_", " ").replace("-", " ").title()
     initial = display_name[0].upper() if display_name else "U"
     
+    is_admin = bool(getattr(current_user, "is_admin", False)) or (current_user.id == 1) or ("admin" in current_user.email.lower())
+    
     return {
         "authenticated": True,
+        "id": current_user.id,
         "email": current_user.email,
         "name": display_name,
         "initial": initial,
+        "is_admin": is_admin,
+        "is_active": bool(getattr(current_user, "is_active", True)),
         "meta_account_name": current_user.meta_account_name,
         "selected_ad_account_id": current_user.selected_ad_account_id,
         "selected_ad_account_name": current_user.selected_ad_account_name
@@ -431,6 +453,17 @@ def get_meta_status(current_user: Optional[User] = Depends(get_optional_user), d
             selected_name = f"{app_info['app_name']} Ad Account"
             current_user.selected_ad_account_name = selected_name
             db.commit()
+
+        # If user manually selected or connected an ad account, ensure it is in the accounts list
+        if selected_id and not any(a.get("id") == selected_id for a in live_ad_accounts):
+            clean_acc_name = selected_name or f"{app_info['app_name']} Ad Account ({selected_id.replace('act_', '')})"
+            live_ad_accounts.insert(0, {
+                "id": selected_id,
+                "account_id": selected_id.replace("act_", ""),
+                "name": clean_acc_name,
+                "currency": "INR",
+                "account_status": 1
+            })
             
         return {
             "connected": True,
@@ -1697,6 +1730,349 @@ def create_test_lead(
         "message": f"Sample {test_lead.lead_type} added successfully!", 
         "lead_id": test_lead.id
     }
+
+
+# ========================================================
+# ================= ADMIN CONTROL PANEL SUITE ============
+# ========================================================
+
+def get_current_admin(current_user: User = Depends(get_current_user)):
+    is_admin = bool(getattr(current_user, "is_admin", False)) or (current_user.id == 1) or ("admin" in current_user.email.lower())
+    if not is_admin:
+        raise HTTPException(status_code=403, detail="Admin permissions required to access the Admin Control Panel.")
+    return current_user
+
+def mask_secret(val: Optional[str]) -> str:
+    if not val:
+        return ""
+    if len(val) < 8:
+        return "••••••••"
+    return val[:4] + "••••••••" + val[-4:]
+
+def update_env_variable(key: str, value: str):
+    env_path = os.path.join(os.path.dirname(__file__), ".env")
+    lines = []
+    found = False
+    if os.path.exists(env_path):
+        try:
+            with open(env_path, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+        except Exception:
+            lines = []
+            
+    new_lines = []
+    for line in lines:
+        if line.strip().startswith(f"{key}="):
+            new_lines.append(f"{key}={value}\n")
+            found = True
+        else:
+            new_lines.append(line)
+            
+    if not found:
+        new_lines.append(f"{key}={value}\n")
+        
+    try:
+        with open(env_path, "w", encoding="utf-8") as f:
+            f.writelines(new_lines)
+    except Exception as e:
+        print(f"Error writing to .env file: {e}")
+        
+    os.environ[key] = value
+
+class AdminUpdateSettingsRequest(BaseModel):
+    fb_app_id: Optional[str] = None
+    fb_app_secret: Optional[str] = None
+    meta_access_token: Optional[str] = None
+    frontend_url: Optional[str] = None
+    meta_webhook_verify_token: Optional[str] = None
+
+class AdminToggleCampaignStatusRequest(BaseModel):
+    status: str
+
+@app.get("/api/admin/stats")
+def get_admin_stats(admin: User = Depends(get_current_admin), db: Session = Depends(get_db)):
+    """Summary KPI metrics for Admin Dashboard."""
+    total_users = db.query(User).count()
+    active_users = db.query(User).filter(User.is_active == True).count()
+    connected_users = db.query(User).filter(User.meta_access_token != None).count()
+    
+    total_campaigns = db.query(Campaign).count()
+    active_campaigns = db.query(Campaign).filter(Campaign.status == "ACTIVE").count()
+    paused_campaigns = db.query(Campaign).filter(Campaign.status == "PAUSED").count()
+    
+    total_leads = db.query(Lead).count()
+    converted_leads = db.query(Lead).filter(Lead.status.in_(["Converted", "Qualified"])).count()
+    
+    app_info = get_configured_meta_app()
+    
+    return {
+        "users": {
+            "total": total_users,
+            "active": active_users,
+            "connected_meta": connected_users
+        },
+        "campaigns": {
+            "total": total_campaigns,
+            "active": active_campaigns,
+            "paused": paused_campaigns
+        },
+        "leads": {
+            "total": total_leads,
+            "converted": converted_leads
+        },
+        "system": {
+            "meta_app_id": app_info["app_id"],
+            "meta_app_name": app_info["app_name"],
+            "has_system_token": bool(os.getenv("META_ACCESS_TOKEN")),
+            "has_app_secret": bool(os.getenv("FB_APP_SECRET")),
+            "frontend_url": os.getenv("FRONTEND_URL", "http://localhost:3000")
+        }
+    }
+
+@app.get("/api/admin/users")
+def get_admin_users(admin: User = Depends(get_current_admin), db: Session = Depends(get_db)):
+    """Retrieve full list of registered platform users."""
+    users = db.query(User).order_by(User.id.desc()).all()
+    user_list = []
+    for u in users:
+        camp_count = db.query(Campaign).filter(Campaign.user_id == u.id).count()
+        lead_count = db.query(Lead).filter(Lead.user_id == u.id).count()
+        user_list.append({
+            "id": u.id,
+            "email": u.email,
+            "is_admin": bool(getattr(u, "is_admin", False)) or (u.id == 1),
+            "is_active": bool(getattr(u, "is_active", True)),
+            "is_meta_connected": bool(u.meta_access_token),
+            "meta_account_name": u.meta_account_name,
+            "selected_ad_account_id": u.selected_ad_account_id,
+            "selected_ad_account_name": u.selected_ad_account_name,
+            "campaigns_count": camp_count,
+            "leads_count": lead_count,
+            "created_at": u.created_at.isoformat() if u.created_at else None
+        })
+    return {"users": user_list}
+
+@app.post("/api/admin/users/{user_id}/toggle-admin")
+def admin_toggle_user_admin(user_id: int, admin: User = Depends(get_current_admin), db: Session = Depends(get_db)):
+    """Toggle admin role for a specific user."""
+    target_user = db.query(User).filter(User.id == user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    current_status = bool(getattr(target_user, "is_admin", False))
+    target_user.is_admin = not current_status
+    db.commit()
+    return {"success": True, "user_id": user_id, "is_admin": target_user.is_admin}
+
+@app.post("/api/admin/users/{user_id}/toggle-active")
+def admin_toggle_user_active(user_id: int, admin: User = Depends(get_current_admin), db: Session = Depends(get_db)):
+    """Suspend or activate a user account."""
+    target_user = db.query(User).filter(User.id == user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    current_status = bool(getattr(target_user, "is_active", True))
+    target_user.is_active = not current_status
+    db.commit()
+    return {"success": True, "user_id": user_id, "is_active": target_user.is_active}
+
+@app.post("/api/admin/users/{user_id}/disconnect-meta")
+def admin_disconnect_user_meta(user_id: int, admin: User = Depends(get_current_admin), db: Session = Depends(get_db)):
+    """Force disconnect a user's Meta connection."""
+    target_user = db.query(User).filter(User.id == user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    target_user.meta_access_token = None
+    target_user.meta_account_id = None
+    target_user.meta_account_name = None
+    target_user.selected_ad_account_id = None
+    target_user.selected_ad_account_name = None
+    db.commit()
+    return {"success": True, "message": f"Meta disconnected for user {target_user.email}."}
+
+@app.delete("/api/admin/users/{user_id}")
+def admin_delete_user(user_id: int, admin: User = Depends(get_current_admin), db: Session = Depends(get_db)):
+    """Delete a user account and associated data."""
+    if admin.id == user_id:
+        raise HTTPException(status_code=400, detail="Cannot delete your own admin account.")
+        
+    target_user = db.query(User).filter(User.id == user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    # Clean up user's campaigns and leads
+    db.query(Campaign).filter(Campaign.user_id == user_id).delete()
+    db.query(Lead).filter(Lead.user_id == user_id).delete()
+    db.delete(target_user)
+    db.commit()
+    return {"success": True, "message": f"User {target_user.email} deleted successfully."}
+
+@app.get("/api/admin/campaigns")
+def get_admin_campaigns(admin: User = Depends(get_current_admin), db: Session = Depends(get_db)):
+    """List all campaigns created by all users."""
+    campaigns = db.query(Campaign).order_by(Campaign.id.desc()).all()
+    user_map = {u.id: u.email for u in db.query(User).all()}
+    
+    camp_list = []
+    for c in campaigns:
+        camp_list.append({
+            "id": c.id,
+            "user_id": c.user_id,
+            "user_email": user_map.get(c.user_id, "Unknown"),
+            "meta_campaign_id": c.meta_campaign_id,
+            "campaign_name": c.campaign_name,
+            "objective": c.objective,
+            "status": c.status,
+            "ad_account_id": c.ad_account_id,
+            "created_at": c.created_at.isoformat() if c.created_at else None
+        })
+    return {"campaigns": camp_list}
+
+@app.post("/api/admin/campaigns/{campaign_id}/status")
+def admin_update_campaign_status(
+    campaign_id: int,
+    req: AdminToggleCampaignStatusRequest,
+    admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """Toggle campaign status between ACTIVE and PAUSED."""
+    camp = db.query(Campaign).filter(Campaign.id == campaign_id).first()
+    if not camp:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+        
+    camp.status = req.status
+    db.commit()
+    return {"success": True, "campaign_id": campaign_id, "status": camp.status}
+
+@app.get("/api/admin/leads")
+def get_admin_leads(admin: User = Depends(get_current_admin), db: Session = Depends(get_db)):
+    """List all leads collected across all users."""
+    leads = db.query(Lead).order_by(Lead.id.desc()).all()
+    user_map = {u.id: u.email for u in db.query(User).all()}
+    
+    lead_list = []
+    for l in leads:
+        lead_list.append({
+            "id": l.id,
+            "user_id": l.user_id,
+            "user_email": user_map.get(l.user_id, "Unknown"),
+            "name": l.name,
+            "phone": l.phone,
+            "email": l.email,
+            "city": l.city,
+            "campaign_name": l.campaign_name,
+            "lead_type": l.lead_type,
+            "status": l.status,
+            "created_at": l.created_at.isoformat() if l.created_at else None
+        })
+    return {"leads": lead_list}
+
+@app.get("/api/admin/settings")
+def get_admin_settings(admin: User = Depends(get_current_admin)):
+    """Retrieve platform configuration settings."""
+    app_info = get_configured_meta_app()
+    return {
+        "fb_app_id": os.getenv("FB_APP_ID", "1603282457939716"),
+        "fb_app_name": app_info["app_name"],
+        "fb_app_secret_masked": mask_secret(os.getenv("FB_APP_SECRET", "")),
+        "has_app_secret": bool(os.getenv("FB_APP_SECRET")),
+        "meta_access_token_masked": mask_secret(os.getenv("META_ACCESS_TOKEN", "")),
+        "has_meta_token": bool(os.getenv("META_ACCESS_TOKEN")),
+        "frontend_url": os.getenv("FRONTEND_URL", "http://localhost:3000"),
+        "meta_webhook_verify_token": os.getenv("META_WEBHOOK_VERIFY_TOKEN", "kpilot_lead_webhook_2026")
+    }
+
+@app.post("/api/admin/settings")
+def update_admin_settings(req: AdminUpdateSettingsRequest, admin: User = Depends(get_current_admin)):
+    """Update Meta API credentials and platform settings in .env and runtime."""
+    updated = []
+    if req.fb_app_id and req.fb_app_id.strip():
+        update_env_variable("FB_APP_ID", req.fb_app_id.strip())
+        updated.append("FB_APP_ID")
+    if req.fb_app_secret and req.fb_app_secret.strip() and not req.fb_app_secret.startswith("••••"):
+        update_env_variable("FB_APP_SECRET", req.fb_app_secret.strip())
+        updated.append("FB_APP_SECRET")
+    if req.meta_access_token and req.meta_access_token.strip() and not req.meta_access_token.startswith("••••"):
+        update_env_variable("META_ACCESS_TOKEN", req.meta_access_token.strip())
+        updated.append("META_ACCESS_TOKEN")
+    if req.frontend_url and req.frontend_url.strip():
+        update_env_variable("FRONTEND_URL", req.frontend_url.strip())
+        updated.append("FRONTEND_URL")
+    if req.meta_webhook_verify_token and req.meta_webhook_verify_token.strip():
+        update_env_variable("META_WEBHOOK_VERIFY_TOKEN", req.meta_webhook_verify_token.strip())
+        updated.append("META_WEBHOOK_VERIFY_TOKEN")
+        
+    return {
+        "success": True,
+        "message": f"Successfully updated settings: {', '.join(updated) if updated else 'No changes'}",
+        "updated_keys": updated
+    }
+
+@app.post("/api/admin/settings/test-meta")
+def test_admin_meta_connection(admin: User = Depends(get_current_admin)):
+    """Live diagnostic test of configured Meta App and Token."""
+    import time
+    app_id = os.getenv("FB_APP_ID", "").strip()
+    app_secret = os.getenv("FB_APP_SECRET", "").strip()
+    token = os.getenv("META_ACCESS_TOKEN", "").strip()
+    
+    t_start = time.time()
+    results = {
+        "app_id": app_id,
+        "latency_ms": 0,
+        "app_status": "Unknown",
+        "token_status": "Unknown",
+        "app_name": None,
+        "user_name": None,
+        "ad_accounts_count": 0,
+        "errors": []
+    }
+    
+    # 1. Test App ID with App Token
+    if app_id and app_secret:
+        try:
+            app_token = f"{app_id}|{app_secret}"
+            r_app = requests.get(f"https://graph.facebook.com/v19.0/{app_id}", params={"access_token": app_token, "fields": "id,name,link"}, timeout=5)
+            if r_app.status_code == 200:
+                data = r_app.json()
+                results["app_status"] = "Valid"
+                results["app_name"] = data.get("name")
+            else:
+                results["app_status"] = "Invalid Secret/ID"
+                results["errors"].append(f"App Verify Error: {r_app.text}")
+        except Exception as e:
+            results["app_status"] = f"Connection Failed ({str(e)})"
+            results["errors"].append(str(e))
+    else:
+        results["app_status"] = "Missing FB_APP_ID or FB_APP_SECRET"
+        
+    # 2. Test User Access Token
+    if token:
+        try:
+            r_me = requests.get("https://graph.facebook.com/v19.0/me", params={"access_token": token, "fields": "id,name"}, timeout=5)
+            if r_me.status_code == 200:
+                data_me = r_me.json()
+                results["token_status"] = "Active & Valid"
+                results["user_name"] = data_me.get("name")
+            else:
+                results["token_status"] = "Expired or Invalid"
+                results["errors"].append(f"Token Verify Error: {r_me.text}")
+                
+            r_ads = requests.get("https://graph.facebook.com/v19.0/me/adaccounts", params={"access_token": token, "fields": "id,name"}, timeout=5)
+            if r_ads.status_code == 200:
+                ad_data = r_ads.json().get("data", [])
+                results["ad_accounts_count"] = len(ad_data)
+        except Exception as e:
+            results["token_status"] = f"Connection Failed ({str(e)})"
+            results["errors"].append(str(e))
+    else:
+        results["token_status"] = "Missing META_ACCESS_TOKEN"
+        
+    results["latency_ms"] = int((time.time() - t_start) * 1000)
+    results["is_healthy"] = results["token_status"] == "Active & Valid" and results["app_status"] == "Valid"
+    
+    return results
 
 
 

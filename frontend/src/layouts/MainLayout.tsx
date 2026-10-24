@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Megaphone, Gauge, Lightbulb, Image as ImageIcon, Bot, Box, Menu, ChevronDown, Moon, Sun, Users } from 'lucide-react';
+import { Home, Megaphone, Gauge, Lightbulb, Image as ImageIcon, Bot, Box, Menu, ChevronDown, Moon, Sun, Users, ShieldCheck } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 export default function MainLayout() {
@@ -8,6 +8,28 @@ export default function MainLayout() {
   const isDark = theme === 'dark';
   const location = useLocation();
   const [isLaunchCampaignOpen, setIsLaunchCampaignOpen] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const res = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.is_admin) {
+            setIsAdmin(true);
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+    checkAdmin();
+  }, []);
 
   const navigation = [
     { name: 'Home', href: '/home', icon: Home },
@@ -27,6 +49,11 @@ export default function MainLayout() {
     { name: 'Pixeo', href: '/pixeo', icon: ImageIcon },
     { name: 'NEO', href: '/neo', icon: Bot },
     { name: 'Assets', href: '/assets', icon: Box },
+    // Admin Control navigation item
+    ...(isAdmin ? [{ name: 'Admin Control', href: '/admin', icon: ShieldCheck, badge: 'PRO' }] : [
+      // If not yet verified or admin, still expose Admin link so the owner can always find it
+      { name: 'Admin Control', href: '/admin', icon: ShieldCheck, badge: 'ADMIN' }
+    ]),
   ];
 
   return (
@@ -143,8 +170,13 @@ export default function MainLayout() {
                     className={`flex-shrink-0 h-[22px] w-[22px] transition-transform ${isActive ? 'text-white' : isDark ? 'text-gray-300' : 'text-slate-600'}`}
                     strokeWidth={isActive ? 2.5 : 2}
                   />
-                  <span className={`ml-4 text-base font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75`}>
+                  <span className={`ml-4 text-base font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75 flex items-center gap-2`}>
                     {item.name}
+                    {(item as any).badge && (
+                      <span className="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        {(item as any).badge}
+                      </span>
+                    )}
                   </span>
                 </Link>
               );
@@ -227,6 +259,7 @@ export default function MainLayout() {
             location.pathname === "/neo" || 
             location.pathname === "/analytics" || 
             location.pathname === "/leads" || 
+            location.pathname === "/admin" || 
             location.pathname === "/processing" 
               ? "h-full w-full" 
               : "p-4 sm:p-6 md:p-8 h-full"

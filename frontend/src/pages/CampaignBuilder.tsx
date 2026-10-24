@@ -529,6 +529,11 @@ export default function CampaignBuilder() {
                         isDark ? 'bg-black/40 border-white/20 text-white' : 'bg-slate-50 border-slate-200 text-slate-800'
                       }`}
                     >
+                      {selectedAdAccount && !adAccounts.some(a => a.id === selectedAdAccount) && (
+                        <option value={selectedAdAccount}>
+                          {selectedAdAccount} (Active Account)
+                        </option>
+                      )}
                       {adAccounts.map(acc => (
                         <option key={acc.id} value={acc.id}>
                           {acc.name} ({acc.id}) - {acc.currency}
