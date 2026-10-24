@@ -13,6 +13,7 @@ import Onboarding from './pages/Onboarding';
 import MetaCallback from './pages/MetaCallback';
 import Leads from './pages/Leads';
 import DataSecurity from './pages/DataSecurity';
+import Privacy from './pages/Privacy';
 
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -23,6 +24,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/data-security" element={<DataSecurity />} />
+          <Route path="/privacy" element={<Privacy />} />
           <Route path="/login" element={<Login />} />
           <Route path="/meta/callback" element={<MetaCallback />} />
           <Route element={<MainLayout />}>

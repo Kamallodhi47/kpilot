@@ -196,7 +196,73 @@ def verify_oauth_state(state: str, user_id: int, email: str) -> bool:
         print("CSRF state verification failure:", e)
         return False
 
+def get_configured_meta_app():
+    fb_app_id = os.getenv("FB_APP_ID", "1603282457939716").strip()
+    fb_app_secret = os.getenv("FB_APP_SECRET", "").strip()
+    token = os.getenv("META_ACCESS_TOKEN", "").strip()
+    
+    app_name = "KPilot"
+    try:
+        auth = f"{fb_app_id}|{fb_app_secret}" if fb_app_secret else token
+        if fb_app_id and auth:
+            r = requests.get(
+                f"https://graph.facebook.com/v19.0/{fb_app_id}",
+                params={"access_token": auth, "fields": "id,name,link"},
+                timeout=5
+            )
+            if r.status_code == 200:
+                data = r.json()
+                raw_name = data.get("name")
+                if raw_name:
+                    app_name = raw_name.upper() if len(raw_name) <= 6 else raw_name.title()
+    except Exception as e:
+        print("Notice getting meta app info:", e)
+        
+    return {
+        "app_id": fb_app_id,
+        "app_name": app_name
+    }
+
+def resolve_meta_display_names(account_name: Optional[str], ad_accounts: list, default_app_name: Optional[str] = None):
+    app_info = get_configured_meta_app()
+    app_name = default_app_name or app_info["app_name"] or "KPilot"
+    
+    clean_account_name = account_name
+    if not clean_account_name or any(w in str(clean_account_name).lower() for w in ["kamal", "lodhi"]):
+        clean_account_name = app_name
+        
+    clean_ad_accounts = []
+    for acc in ad_accounts:
+        acc_copy = dict(acc)
+        raw_ad_name = acc_copy.get("name", "")
+        if not raw_ad_name or any(w in str(raw_ad_name).lower() for w in ["kamal", "lodhi"]):
+            acc_id = acc_copy.get("account_id") or acc_copy.get("id", "").replace("act_", "")
+            acc_copy["name"] = f"{app_name} Ad Account ({acc_id})" if acc_id else f"{app_name} Ad Account"
+        clean_ad_accounts.append(acc_copy)
+        
+    return clean_account_name, clean_ad_accounts, app_info
+
 def fetch_meta_details(access_token: str):
+    if access_token and access_token.startswith("sandbox_"):
+        app_info = get_configured_meta_app()
+        return {
+            "account_id": "sandbox_user_99",
+            "account_name": f"{app_info['app_name']} (Sandbox Tester)",
+            "ad_accounts": [{
+                "id": "act_sandbox_998877",
+                "account_id": "sandbox_998877",
+                "name": f"{app_info['app_name']} Sandbox Ad Account (Demo)",
+                "account_status": 1,
+                "currency": "INR",
+                "amount_spent": "0",
+                "timezone_name": "Asia/Calcutta"
+            }],
+            "app_id": app_info["app_id"],
+            "app_name": app_info["app_name"],
+            "is_sandbox": True,
+            "error": None,
+            "token_expired": False
+        }
     try:
         user_url = "https://graph.facebook.com/v19.0/me"
         user_res = requests.get(user_url, params={"fields": "id,name,email", "access_token": access_token}, timeout=15)
@@ -237,10 +303,16 @@ def fetch_meta_details(access_token: str):
         else:
             print(f"Meta Ad Accounts API error: {ad_res.text}")
             
+        clean_account_name, clean_ad_accounts, app_info = resolve_meta_display_names(
+            user_data.get("name"), ad_accounts
+        )
+            
         return {
             "account_id": user_data.get("id"),
-            "account_name": user_data.get("name"),
-            "ad_accounts": ad_accounts,
+            "account_name": clean_account_name,
+            "ad_accounts": clean_ad_accounts,
+            "app_id": app_info["app_id"],
+            "app_name": app_info["app_name"],
             "error": None,
             "token_expired": False
         }
@@ -346,32 +418,51 @@ def get_meta_status(current_user: Optional[User] = Depends(get_optional_user), d
             current_user.selected_ad_account_name = selected_name
             if not current_user.meta_account_id:
                 current_user.meta_account_id = details.get("account_id")
-            if not current_user.meta_account_name:
+            if not current_user.meta_account_name or any(w in str(current_user.meta_account_name).lower() for w in ["kamal", "lodhi"]):
                 current_user.meta_account_name = details.get("account_name")
+            db.commit()
+            
+        clean_account_name, live_ad_accounts, app_info = resolve_meta_display_names(
+            details.get("account_name") or current_user.meta_account_name,
+            live_ad_accounts
+        )
+        
+        if selected_name and any(w in str(selected_name).lower() for w in ["kamal", "lodhi"]):
+            selected_name = f"{app_info['app_name']} Ad Account"
+            current_user.selected_ad_account_name = selected_name
             db.commit()
             
         return {
             "connected": True,
             "token_expired": False,
             "email": current_user.email,
-            "account_name": details.get("account_name") or current_user.meta_account_name,
+            "account_name": clean_account_name,
             "account_id": current_user.meta_account_id or details.get("account_id"),
+            "app_id": app_info["app_id"],
+            "app_name": app_info["app_name"],
             "ad_accounts": live_ad_accounts,
             "selected_ad_account_id": selected_id,
             "selected_ad_account_name": selected_name
         }
 
     # 2. Unauthenticated or user hasn't connected Meta yet: ALWAYS default to Disconnected
+    app_info = get_configured_meta_app()
     return {
         "connected": False,
         "token_expired": False,
         "email": current_user.email if current_user else None,
         "account_name": None,
         "account_id": None,
+        "app_id": app_info["app_id"],
+        "app_name": app_info["app_name"],
         "ad_accounts": [],
         "selected_ad_account_id": None,
         "selected_ad_account_name": None
     }
+
+@app.get("/api/meta/app-info")
+def get_meta_app_info_endpoint():
+    return get_configured_meta_app()
 
 @app.post("/api/meta/select-account")
 def select_ad_account(payload: SelectAccountRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -542,28 +633,51 @@ def connect_meta_by_id(req: ConnectByIdRequest, current_user: Optional[User] = D
     if not raw_id:
         raise HTTPException(status_code=400, detail="Meta ID / Ad Account ID is required")
         
-    formatted_id = raw_id if raw_id.startswith("act_") else f"act_{raw_id}"
+    app_info = get_configured_meta_app()
+    fb_app_id = app_info["app_id"]
+    app_name = app_info["app_name"]
+
+    is_app_id = (raw_id == fb_app_id) or (raw_id.replace("app_", "") == fb_app_id)
     token = (req.custom_token.strip() if req.custom_token else "") or get_system_token(current_user)
     
-    acc_name = req.account_name or f"Meta Account ({raw_id})"
     currency = "INR"
     status_code = 1
-    
-    if token:
-        try:
-            verify_url = f"https://graph.facebook.com/v19.0/{formatted_id}?fields=id,name,account_status,currency&access_token={token}"
-            res = requests.get(verify_url, timeout=7)
-            if res.status_code == 200:
-                acc_data = res.json()
-                acc_name = acc_data.get("name", acc_name)
-                currency = acc_data.get("currency", "INR")
-                status_code = acc_data.get("account_status", 1)
-            else:
-                profile_res = requests.get(f"https://graph.facebook.com/v19.0/{raw_id}?fields=id,name&access_token={token}", timeout=5)
-                if profile_res.status_code == 200:
-                    acc_name = profile_res.json().get("name", acc_name)
-        except Exception as e:
-            print("Notice verifying Meta ID:", e)
+
+    if is_app_id:
+        acc_name = app_name
+        # Connect to system/configured ad account for this App
+        details = fetch_meta_details(token) if token else {}
+        ad_accs = details.get("ad_accounts", [])
+        if ad_accs:
+            formatted_id = ad_accs[0]["id"]
+            selected_ad_name = ad_accs[0]["name"]
+        else:
+            formatted_id = "act_560854715006518"
+            selected_ad_name = f"{app_name} Ad Account"
+    else:
+        formatted_id = raw_id if raw_id.startswith("act_") else f"act_{raw_id}"
+        acc_name = req.account_name or f"Meta Account ({raw_id})"
+        selected_ad_name = acc_name
+        
+        if token:
+            try:
+                verify_url = f"https://graph.facebook.com/v19.0/{formatted_id}?fields=id,name,account_status,currency&access_token={token}"
+                res = requests.get(verify_url, timeout=7)
+                if res.status_code == 200:
+                    acc_data = res.json()
+                    acc_name = acc_data.get("name", acc_name)
+                    currency = acc_data.get("currency", "INR")
+                    status_code = acc_data.get("account_status", 1)
+                else:
+                    profile_res = requests.get(f"https://graph.facebook.com/v19.0/{raw_id}?fields=id,name&access_token={token}", timeout=5)
+                    if profile_res.status_code == 200:
+                        acc_name = profile_res.json().get("name", acc_name)
+            except Exception as e:
+                print("Notice verifying Meta ID:", e)
+                
+        if any(w in acc_name.lower() for w in ["kamal", "lodhi"]):
+            acc_name = app_name
+        selected_ad_name = f"{acc_name} Ad Account" if not selected_ad_name or any(w in selected_ad_name.lower() for w in ["kamal", "lodhi"]) else selected_ad_name
             
     user = current_user
     if not user and email:
@@ -575,7 +689,7 @@ def connect_meta_by_id(req: ConnectByIdRequest, current_user: Optional[User] = D
                 meta_account_id=raw_id,
                 meta_account_name=acc_name,
                 selected_ad_account_id=formatted_id,
-                selected_ad_account_name=acc_name,
+                selected_ad_account_name=selected_ad_name,
                 meta_access_token=token if token else None
             )
             db.add(user)
@@ -584,7 +698,7 @@ def connect_meta_by_id(req: ConnectByIdRequest, current_user: Optional[User] = D
 
     if user:
         user.selected_ad_account_id = formatted_id
-        user.selected_ad_account_name = acc_name
+        user.selected_ad_account_name = selected_ad_name
         user.meta_account_id = raw_id
         user.meta_account_name = acc_name
         if token and not user.meta_access_token:
@@ -598,7 +712,7 @@ def connect_meta_by_id(req: ConnectByIdRequest, current_user: Optional[User] = D
         "account_name": acc_name,
         "account_id": raw_id,
         "selected_ad_account_id": formatted_id,
-        "selected_ad_account_name": acc_name,
+        "selected_ad_account_name": selected_ad_name,
         "token": token,
         "currency": currency,
         "status_code": status_code
@@ -606,30 +720,68 @@ def connect_meta_by_id(req: ConnectByIdRequest, current_user: Optional[User] = D
         
     return {
         "success": True,
-        "message": f"Successfully connected Meta Account ({acc_name}) with {email}!",
+        "message": f"Successfully connected Meta ({acc_name}) with {email}!",
         "email": email,
         "account_name": acc_name,
         "account_id": raw_id,
         "selected_ad_account_id": formatted_id,
-        "selected_ad_account_name": acc_name,
+        "selected_ad_account_name": selected_ad_name,
         "ad_accounts": [{
             "id": formatted_id,
             "account_id": raw_id,
-            "name": acc_name,
+            "name": selected_ad_name,
             "currency": currency,
             "account_status": status_code
         }]
     }
 
 @app.get("/api/meta/campaigns")
-def get_meta_campaigns(account_id: Optional[str] = None, current_user: Optional[User] = Depends(get_optional_user)):
+def get_meta_campaigns(account_id: Optional[str] = None, current_user: Optional[User] = Depends(get_optional_user), db: Session = Depends(get_db)):
     if not current_user or not current_user.meta_access_token:
         return {"data": []}
         
     token = current_user.meta_access_token.strip()
-    try:
-        target_account = account_id or current_user.selected_ad_account_id
+    target_account = account_id or current_user.selected_ad_account_id or ""
+    
+    # Check if sandbox mode
+    if token.startswith("sandbox_") or target_account.startswith("act_sandbox"):
+        try:
+            db_camps = db.query(Campaign).filter(Campaign.user_id == current_user.id).all()
+            if db_camps:
+                return {
+                    "data": [{
+                        "id": c.meta_campaign_id,
+                        "name": c.campaign_name,
+                        "status": c.status,
+                        "objective": c.objective,
+                        "daily_budget": "50000",
+                        "start_time": "2026-10-23T10:00:00+0000"
+                    } for c in db_camps]
+                }
+        except Exception:
+            pass
+        return {
+            "data": [
+                {
+                    "id": "sandbox_camp_1",
+                    "name": "KPilot AI Lead Generation (Demo Sandbox)",
+                    "status": "ACTIVE",
+                    "objective": "OUTCOME_LEADS",
+                    "daily_budget": "50000",
+                    "start_time": "2026-10-23T10:00:00+0000"
+                },
+                {
+                    "id": "sandbox_camp_2",
+                    "name": "High ROI Traffic Retargeting (Demo Sandbox)",
+                    "status": "PAUSED",
+                    "objective": "OUTCOME_TRAFFIC",
+                    "daily_budget": "100000",
+                    "start_time": "2026-10-22T14:30:00+0000"
+                }
+            ]
+        }
         
+    try:
         if not target_account:
             details = fetch_meta_details(token)
             if details.get("ad_accounts"):
@@ -725,6 +877,35 @@ def publish_meta_campaign(
     if not ad_acc.startswith("act_"):
         ad_acc = f"act_{ad_acc}"
         
+    # Check if sandbox mode
+    if token.startswith("sandbox_") or ad_acc.startswith("act_sandbox"):
+        import time
+        camp_id = f"sandbox_{int(time.time())}"
+        try:
+            new_camp_record = Campaign(
+                user_id=current_user.id,
+                meta_campaign_id=camp_id,
+                campaign_name=req.campaign_name,
+                objective=req.objective,
+                status=req.status,
+                ad_account_id=ad_acc
+            )
+            db.add(new_camp_record)
+            db.commit()
+        except Exception as e:
+            print("[Sandbox DB Save] Notice:", e)
+            
+        return {
+            "success": True,
+            "message": f"[Sandbox Test Mode] Meta Campaign '{req.campaign_name}' simulated & created successfully!",
+            "campaign_id": camp_id,
+            "ad_account_id": ad_acc,
+            "status": req.status,
+            "objective": req.objective,
+            "is_sandbox": True,
+            "ads_manager_url": "https://adsmanager.facebook.com"
+        }
+
     try:
         # Step 1: Create Campaign on Meta
         camp_payload = {
@@ -769,6 +950,164 @@ def publish_meta_campaign(
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error publishing campaign: {str(e)}")
+
+
+# ========================================================
+# ================ META TEST USERS & SANDBOX API =========
+# ========================================================
+
+class ConnectTestUserRequest(BaseModel):
+    email: str
+    access_token: str
+    ad_account_id: str
+    ad_account_name: Optional[str] = None
+    account_name: Optional[str] = None
+
+@app.get("/api/meta/test-users")
+def get_meta_test_users():
+    """Retrieve test accounts from Meta Developer Graph API and local sandbox."""
+    app_info = get_configured_meta_app()
+    fb_app_id = app_info["app_id"]
+    fb_app_secret = os.getenv("FB_APP_SECRET", "").strip()
+    app_token = f"{fb_app_id}|{fb_app_secret}" if fb_app_secret else os.getenv("META_ACCESS_TOKEN", "").strip()
+    
+    meta_test_users = []
+    try:
+        r = requests.get(
+            f"https://graph.facebook.com/v19.0/{fb_app_id}/accounts/test-users",
+            params={"access_token": app_token, "limit": 25},
+            timeout=7
+        )
+        if r.status_code == 200:
+            meta_test_users = r.json().get("data", [])
+    except Exception as e:
+        print("Notice fetching Meta test users:", e)
+        
+    # Always include pre-configured ready-to-test Sandbox Account
+    sandbox_accounts = [
+        {
+            "id": "sandbox_user_99",
+            "name": f"{app_info['app_name']} Sandbox Demo User",
+            "email": "tester_kpilot@tfbnw.net",
+            "password": "KPilotTester@2026",
+            "access_token": "sandbox_token_demo_998877",
+            "ad_account_id": "act_sandbox_998877",
+            "ad_account_name": f"{app_info['app_name']} Sandbox Ad Account (Demo)",
+            "is_sandbox": True,
+            "is_meta_api": False
+        }
+    ]
+    
+    return {
+        "app_id": fb_app_id,
+        "app_name": app_info["app_name"],
+        "meta_test_users": meta_test_users,
+        "sandbox_accounts": sandbox_accounts
+    }
+
+@app.post("/api/meta/test-users/create")
+def create_meta_test_user():
+    """Create test account via Meta Graph API or generate a sandbox test user."""
+    app_info = get_configured_meta_app()
+    fb_app_id = app_info["app_id"]
+    fb_app_secret = os.getenv("FB_APP_SECRET", "").strip()
+    app_token = f"{fb_app_id}|{fb_app_secret}" if fb_app_secret else os.getenv("META_ACCESS_TOKEN", "").strip()
+    
+    # Try Meta Graph API first
+    try:
+        r = requests.post(
+            f"https://graph.facebook.com/v19.0/{fb_app_id}/accounts/test-users",
+            params={
+                "installed": "true",
+                "permissions": "ads_management,ads_read,read_insights,public_profile",
+                "access_token": app_token
+            },
+            timeout=8
+        )
+        if r.status_code == 200:
+            data = r.json()
+            return {
+                "success": True,
+                "source": "meta_graph_api",
+                "id": data.get("id"),
+                "email": data.get("email"),
+                "password": data.get("password"),
+                "access_token": data.get("access_token"),
+                "login_url": data.get("login_url"),
+                "ad_account_id": f"act_test_{data.get('id')}",
+                "ad_account_name": f"{app_info['app_name']} Test Account ({data.get('id')})",
+                "message": "Meta Graph API test account successfully created!"
+            }
+        else:
+            print("Meta test-user creation notice (falling back to Sandbox):", r.text)
+    except Exception as e:
+        print("Meta test-user exception:", e)
+        
+    # Fallback to Sandbox Test User Generator with realistic credentials
+    import random, time
+    rand_id = random.randint(100000, 999999)
+    ts = int(time.time()) % 10000
+    gen_email = f"tester_{rand_id}@tfbnw.net"
+    gen_pass = f"KPilotTester@{rand_id}"
+    gen_token = f"sandbox_token_{rand_id}_{ts}"
+    gen_ad_acc = f"act_sandbox_{rand_id}"
+    
+    return {
+        "success": True,
+        "source": "sandbox_generator",
+        "id": f"sandbox_usr_{rand_id}",
+        "email": gen_email,
+        "password": gen_pass,
+        "access_token": gen_token,
+        "ad_account_id": gen_ad_acc,
+        "ad_account_name": f"{app_info['app_name']} Sandbox Ad Account ({rand_id})",
+        "message": "Sandbox Test Account successfully generated! You can test campaigns with 1 click."
+    }
+
+@app.post("/api/meta/test-users/connect")
+def connect_test_user_session(
+    payload: ConnectTestUserRequest,
+    current_user: Optional[User] = Depends(get_optional_user),
+    db: Session = Depends(get_db)
+):
+    """Directly connects a generated test user into the logged-in session."""
+    app_info = get_configured_meta_app()
+    acc_name = payload.account_name or f"{app_info['app_name']} (Test Account)"
+    ad_acc_name = payload.ad_account_name or f"{acc_name} Ad Account"
+    
+    user = current_user
+    if not user:
+        user = db.query(User).filter(User.email == payload.email).first()
+        if not user:
+            user = User(
+                email=payload.email,
+                password_hash=get_password_hash("default123"),
+                meta_account_id=payload.ad_account_id,
+                meta_account_name=acc_name,
+                selected_ad_account_id=payload.ad_account_id,
+                selected_ad_account_name=ad_acc_name,
+                meta_access_token=payload.access_token
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+            
+    if user:
+        user.meta_access_token = payload.access_token
+        user.meta_account_id = payload.ad_account_id
+        user.meta_account_name = acc_name
+        user.selected_ad_account_id = payload.ad_account_id
+        user.selected_ad_account_name = ad_acc_name
+        db.commit()
+        
+    return {
+        "success": True,
+        "message": f"Connected to {acc_name}!",
+        "account_name": acc_name,
+        "selected_ad_account_id": payload.ad_account_id,
+        "selected_ad_account_name": ad_acc_name,
+        "is_sandbox": True
+    }
 
 @app.post("/api/meta/disconnect")
 def disconnect_meta(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
