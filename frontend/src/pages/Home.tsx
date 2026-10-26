@@ -95,15 +95,15 @@ export default function Home() {
     <div className={`h-full w-full flex flex-col ${isDark ? 'bg-[#0a0a0f] text-white' : 'bg-slate-50 text-slate-900'} rounded-2xl relative overflow-y-auto scrollbar-none animate-in fade-in duration-300 transition-colors`}>
       
       {/* Top Header */}
-      <div className="flex justify-between items-center p-6 sm:p-8 z-20 relative shrink-0">
-        <div>
-          <h1 className={`text-2xl sm:text-3xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'} font-sans`}>
+      <div className="flex justify-between items-center p-4 sm:p-8 z-20 relative shrink-0">
+        <div className="min-w-0 pr-2">
+          <h1 className={`text-xl sm:text-3xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'} font-sans truncate`}>
             Welcome to KPILOT, <span className={isDark ? 'text-white' : 'text-purple-600'}>{userName}</span>
           </h1>
-          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-slate-500'} mt-1`}>Let's start a new project</p>
+          <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-slate-500'} mt-0.5 sm:mt-1`}>Let's start a new project</p>
         </div>
         
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           <button 
             onClick={() => navigate('/build')}
             className="hidden lg:flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)]"
@@ -114,13 +114,13 @@ export default function Home() {
           
           <button 
             onClick={() => navigate('/dashboard')}
-            className={`flex items-center gap-2 ${isDark ? 'bg-white/5 hover:bg-white/10 border-white/10 text-white' : 'bg-slate-200 hover:bg-slate-300 border-slate-300 text-slate-800'} border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all`}
+            className={`hidden sm:flex items-center gap-2 ${isDark ? 'bg-white/5 hover:bg-white/10 border-white/10 text-white' : 'bg-slate-200 hover:bg-slate-300 border-slate-300 text-slate-800'} border px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all`}
           >
             <span className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,1)]"></span>
             Take a tour
           </button>
 
-          <div className={`flex items-center ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-200 border-slate-300'} rounded-full p-1 border`}>
+          <div className={`hidden sm:flex items-center ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-200 border-slate-300'} rounded-full p-1 border`}>
             <button
               onClick={toggleTheme}
               className={`w-8 h-8 rounded-full flex items-center justify-center ${isDark ? 'text-gray-400 hover:text-white' : 'text-slate-700 hover:text-slate-950'} transition-colors cursor-pointer`}
@@ -134,7 +134,7 @@ export default function Home() {
           <div className="relative">
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#ea580c] to-[#f97316] flex items-center justify-center text-white font-bold text-base shadow-lg shadow-orange-500/20 hover:scale-105 active:scale-95 transition-all ring-2 ring-white/10"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-[#ea580c] to-[#f97316] flex items-center justify-center text-white font-bold text-sm sm:text-base shadow-lg shadow-orange-500/20 hover:scale-105 active:scale-95 transition-all ring-2 ring-white/10"
               title={userEmail ? `Logged in as ${userEmail}` : 'User Profile'}
             >
               {userInitial}
@@ -172,18 +172,18 @@ export default function Home() {
       </div>
 
       {/* Main Prompt & Center Section */}
-      <div className="flex flex-col items-center justify-center px-4 z-10 relative pt-4 pb-8">
+      <div className="flex flex-col items-center justify-center px-3 sm:px-4 z-10 relative pt-2 sm:pt-4 pb-6 sm:pb-8">
         
         {/* Title */}
-        <h2 className={`text-3xl sm:text-5xl font-bold mb-8 text-center tracking-tight font-sans ${isDark ? 'text-white' : 'text-slate-900'}`}>
+        <h2 className={`text-2xl sm:text-4xl md:text-5xl font-bold mb-5 sm:mb-8 text-center tracking-tight font-sans ${isDark ? 'text-white' : 'text-slate-900'}`}>
           What will you create <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-indigo-600">today?</span>
         </h2>
 
         {/* Big Interactive Input Box */}
-        <div className="w-full max-w-4xl relative mb-8 group">
+        <div className="w-full max-w-4xl relative mb-6 sm:mb-8 group">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 opacity-25 rounded-2xl blur-md group-hover:opacity-50 transition duration-500"></div>
           
-          <div className={`relative ${isDark ? 'bg-[#07070c] border-purple-500/30' : 'bg-white border-purple-300 shadow-xl'} border rounded-2xl p-5 min-h-[170px] flex flex-col justify-between shadow-2xl`}>
+          <div className={`relative ${isDark ? 'bg-[#07070c] border-purple-500/30' : 'bg-white border-purple-300 shadow-xl'} border rounded-2xl p-4 sm:p-5 min-h-[140px] sm:min-h-[170px] flex flex-col justify-between shadow-2xl`}>
             <textarea 
               value={promptInput}
               onChange={(e) => setPromptInput(e.target.value)}
@@ -193,15 +193,15 @@ export default function Home() {
                   handleLaunchPrompt();
                 }
               }}
-              className={`w-full bg-transparent resize-none outline-none text-base sm:text-lg ${isDark ? 'text-white placeholder-gray-500' : 'text-slate-900 placeholder-slate-400'} p-1 scrollbar-none`}
+              className={`w-full bg-transparent resize-none outline-none text-sm sm:text-lg ${isDark ? 'text-white placeholder-gray-500' : 'text-slate-900 placeholder-slate-400'} p-1 scrollbar-none`}
               placeholder="Launch a retargeting campaign for weekend site visitors..."
               rows={3}
             />
 
-            <div className="flex justify-between items-end pt-3">
+            <div className="flex justify-between items-end pt-2 sm:pt-3">
               <button 
                 onClick={toggleMic}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all ${
                   isListening 
                     ? 'bg-rose-500 text-white animate-pulse' 
                     : isDark ? 'bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900'
@@ -214,7 +214,7 @@ export default function Home() {
               <button 
                 onClick={() => handleLaunchPrompt()}
                 disabled={!promptInput.trim()}
-                className="w-10 h-10 rounded-full bg-[#7c3aed] hover:bg-purple-500 disabled:opacity-40 flex items-center justify-center text-white transition-all shadow-lg shadow-purple-500/40 hover:scale-105 active:scale-95 cursor-pointer"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#7c3aed] hover:bg-purple-500 disabled:opacity-40 flex items-center justify-center text-white transition-all shadow-lg shadow-purple-500/40 hover:scale-105 active:scale-95 cursor-pointer"
                 title="Send Prompt"
               >
                 <Send className="w-4 h-4 ml-[-2px]" />
@@ -224,41 +224,41 @@ export default function Home() {
         </div>
 
         {/* Feature Category Pills */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 mb-8 max-w-4xl">
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-6 sm:mb-8 max-w-4xl px-1">
           <button 
             onClick={() => navigate('/build')}
-            className={`flex items-center gap-2 ${isDark ? 'bg-black/50 hover:bg-white/10 border-white/10' : 'bg-white hover:bg-slate-100 border-slate-200 shadow-sm'} border px-4 py-2 rounded-full text-xs transition-all hover:scale-105`}
+            className={`flex items-center gap-1.5 sm:gap-2 ${isDark ? 'bg-black/50 hover:bg-white/10 border-white/10' : 'bg-white hover:bg-slate-100 border-slate-200 shadow-sm'} border px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs transition-all hover:scale-105`}
           >
-            <span className="w-5 h-5 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-400"><Target className="w-3 h-3" /></span>
+            <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-400 shrink-0"><Target className="w-2.5 h-2.5 sm:w-3 sm:h-3" /></span>
             <span className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Xeno</span>
-            <span className={isDark ? 'text-gray-400' : 'text-slate-500'}>- Launch autonomous campaigns</span>
+            <span className={`${isDark ? 'text-gray-400' : 'text-slate-500'} hidden sm:inline`}>- Launch autonomous campaigns</span>
           </button>
 
           <button 
             onClick={() => navigate('/processing')}
-            className={`flex items-center gap-2 ${isDark ? 'bg-black/50 hover:bg-white/10 border-white/10' : 'bg-white hover:bg-slate-100 border-slate-200 shadow-sm'} border px-4 py-2 rounded-full text-xs transition-all hover:scale-105`}
+            className={`flex items-center gap-1.5 sm:gap-2 ${isDark ? 'bg-black/50 hover:bg-white/10 border-white/10' : 'bg-white hover:bg-slate-100 border-slate-200 shadow-sm'} border px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs transition-all hover:scale-105`}
           >
-            <span className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400"><ImageIcon className="w-3 h-3" /></span>
+            <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 shrink-0"><ImageIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" /></span>
             <span className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Pixeo</span>
-            <span className={isDark ? 'text-gray-400' : 'text-slate-500'}>- Generate creatives</span>
+            <span className={`${isDark ? 'text-gray-400' : 'text-slate-500'} hidden sm:inline`}>- Generate creatives</span>
           </button>
 
           <button 
             onClick={() => navigate('/dashboard')}
-            className={`flex items-center gap-2 ${isDark ? 'bg-black/50 hover:bg-white/10 border-white/10' : 'bg-white hover:bg-slate-100 border-slate-200 shadow-sm'} border px-4 py-2 rounded-full text-xs transition-all hover:scale-105`}
+            className={`flex items-center gap-1.5 sm:gap-2 ${isDark ? 'bg-black/50 hover:bg-white/10 border-white/10' : 'bg-white hover:bg-slate-100 border-slate-200 shadow-sm'} border px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs transition-all hover:scale-105`}
           >
-            <span className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400"><BarChart2 className="w-3 h-3" /></span>
+            <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 shrink-0"><BarChart2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" /></span>
             <span className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Analytics</span>
-            <span className={isDark ? 'text-gray-400' : 'text-slate-500'}>- Chat with your data</span>
+            <span className={`${isDark ? 'text-gray-400' : 'text-slate-500'} hidden sm:inline`}>- Chat with your data</span>
           </button>
 
           <button 
             onClick={() => navigate('/optimise')}
-            className={`flex items-center gap-2 ${isDark ? 'bg-black/50 hover:bg-white/10 border-white/10' : 'bg-white hover:bg-slate-100 border-slate-200 shadow-sm'} border px-4 py-2 rounded-full text-xs transition-all hover:scale-105`}
+            className={`flex items-center gap-1.5 sm:gap-2 ${isDark ? 'bg-black/50 hover:bg-white/10 border-white/10' : 'bg-white hover:bg-slate-100 border-slate-200 shadow-sm'} border px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs transition-all hover:scale-105`}
           >
-            <span className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400"><Lightbulb className="w-3 h-3" /></span>
+            <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400 shrink-0"><Lightbulb className="w-2.5 h-2.5 sm:w-3 sm:h-3" /></span>
             <span className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Recommendations</span>
-            <span className={isDark ? 'text-gray-400' : 'text-slate-500'}>- Know what to do next</span>
+            <span className={`${isDark ? 'text-gray-400' : 'text-slate-500'} hidden sm:inline`}>- Know what to do next</span>
           </button>
         </div>
 

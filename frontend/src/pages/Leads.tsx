@@ -473,8 +473,8 @@ export default function Leads() {
       <div className={`rounded-2xl border overflow-hidden transition-all ${
         isDark ? 'bg-black/40 border-white/10' : 'bg-white border-slate-200 shadow-sm'
       }`}>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto scrollbar-thin">
+          <table className="w-full text-left border-collapse min-w-[650px]">
             <thead>
               <tr className={`border-b text-xs uppercase tracking-wider ${
                 isDark ? 'border-white/10 bg-white/[0.02] text-gray-400' : 'border-slate-200 bg-slate-50 text-slate-500'

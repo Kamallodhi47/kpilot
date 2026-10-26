@@ -885,8 +885,8 @@ export default function Dashboard({ defaultTab = 'overview' }: DashboardProps) {
               </button>
             </div>
           ) : (
-            <div className={`${isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-200 shadow-sm'} border rounded-2xl overflow-hidden`}>
-              <table className="w-full text-left text-xs sm:text-sm">
+            <div className={`${isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-200 shadow-sm'} border rounded-2xl overflow-x-auto scrollbar-thin`}>
+              <table className="w-full text-left text-xs sm:text-sm min-w-[600px]">
                 <thead className={`${isDark ? 'bg-black/40 text-gray-400 border-white/5' : 'bg-slate-50 text-slate-600 border-slate-200'} border-b`}>
                   <tr>
                     <th className="p-4">Campaign Name</th>

@@ -36,6 +36,7 @@ export default function CampaignBuilder() {
   const [isDraftStarted, setIsDraftStarted] = useState<boolean>(false);
   const [activeBottomTab, setActiveBottomTab] = useState<'campaign' | 'pixeo' | 'analytics'>('campaign');
   const [isNeoPanelOpen, setIsNeoPanelOpen] = useState<boolean>(true);
+  const [mobileActiveView, setMobileActiveView] = useState<'workspace' | 'neo'>('workspace');
 
   // User Profile
   const [userName, setUserName] = useState('User');
@@ -320,15 +321,41 @@ export default function CampaignBuilder() {
       
       {/* ================= TOP HEADER (XENO + CONTROLS) ================= */}
       <div className="flex items-center justify-between px-2 shrink-0">
-        <h1 className={`text-2xl sm:text-3xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'} font-sans uppercase`}>
-          XENO
-        </h1>
-
         <div className="flex items-center gap-3">
+          <h1 className={`text-xl sm:text-3xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'} font-sans uppercase`}>
+            XENO
+          </h1>
+
+          {/* Mobile View Switcher (Workspace vs NEO AI) */}
+          <div className="flex lg:hidden items-center p-0.5 rounded-xl bg-white/5 border border-white/10 text-xs">
+            <button
+              onClick={() => setMobileActiveView('workspace')}
+              className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+                mobileActiveView === 'workspace' 
+                  ? 'bg-purple-600 text-white font-bold shadow' 
+                  : isDark ? 'text-gray-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Workspace
+            </button>
+            <button
+              onClick={() => setMobileActiveView('neo')}
+              className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+                mobileActiveView === 'neo' 
+                  ? 'bg-purple-600 text-white font-bold shadow' 
+                  : isDark ? 'text-gray-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              NEO AI
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Theme Toggle Switch */}
           <button
             onClick={toggleTheme}
-            className={`flex items-center justify-between w-14 h-7 ${isDark ? 'bg-[#1c1c28] border-white/10' : 'bg-slate-200 border-slate-300'} border rounded-full p-1 transition-all cursor-pointer hover:border-purple-500/40`}
+            className={`flex items-center justify-between w-12 sm:w-14 h-7 ${isDark ? 'bg-[#1c1c28] border-white/10' : 'bg-slate-200 border-slate-300'} border rounded-full p-1 transition-all cursor-pointer hover:border-purple-500/40`}
             title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
           >
             <div className={`w-5 h-5 rounded-full ${isDark ? 'bg-[#0d091a] text-purple-300' : 'bg-white text-amber-500'} flex items-center justify-center shadow-sm`}>
@@ -338,7 +365,7 @@ export default function CampaignBuilder() {
 
           {/* User Profile Avatar */}
           <div 
-            className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#ea580c] to-[#f97316] text-white flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white/10 cursor-pointer hover:opacity-90"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-[#ea580c] to-[#f97316] text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-md ring-2 ring-white/10 cursor-pointer hover:opacity-90"
             title={userEmail ? `User: ${userEmail}` : `User: ${userName}`}
           >
             {userInitial}
@@ -350,7 +377,7 @@ export default function CampaignBuilder() {
       <div className="flex-1 flex gap-3 overflow-hidden min-h-0">
         
         {/* ================= LEFT / CENTER WORKSPACE CONTAINER ================= */}
-        <div className={`flex-1 ${isDark ? 'bg-[#090912] border-white/10 shadow-2xl' : 'bg-white border-slate-200/80 shadow-sm'} border rounded-2xl sm:rounded-3xl flex flex-col overflow-hidden relative`}>
+        <div className={`flex-1 ${mobileActiveView === 'workspace' ? 'flex' : 'hidden lg:flex'} ${isDark ? 'bg-[#090912] border-white/10 shadow-2xl' : 'bg-white border-slate-200/80 shadow-sm'} border rounded-2xl sm:rounded-3xl flex-col overflow-hidden relative`}>
           
           {/* SUBHEADER: Campaign Workspace & Controls */}
           <div className={`h-14 flex items-center justify-between px-5 ${isDark ? 'bg-[#0b0b14] border-white/5' : 'bg-white border-slate-100'} border-b shrink-0 z-10`}>
@@ -790,7 +817,7 @@ export default function CampaignBuilder() {
 
         {/* ================= RIGHT PANEL: NEO AI ASSISTANT ================= */}
         {isNeoPanelOpen && (
-          <div className={`w-[310px] sm:w-[340px] lg:w-[370px] ${isDark ? 'bg-[#090912] border-white/10 shadow-2xl' : 'bg-white border-slate-200/80 shadow-sm'} border rounded-2xl sm:rounded-3xl flex flex-col shrink-0 relative overflow-hidden`}>
+          <div className={`w-full lg:w-[370px] ${mobileActiveView === 'neo' ? 'flex' : 'hidden lg:flex'} ${isDark ? 'bg-[#090912] border-white/10 shadow-2xl' : 'bg-white border-slate-200/80 shadow-sm'} border rounded-2xl sm:rounded-3xl flex-col shrink-0 relative overflow-hidden`}>
             
             {/* NEO Header */}
             <div className={`h-14 flex items-center justify-between px-4 ${isDark ? 'bg-[#0b0b14] border-white/5' : 'bg-white border-slate-100'} border-b shrink-0`}>

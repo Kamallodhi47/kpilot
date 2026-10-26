@@ -38,6 +38,7 @@ export default function Pixeo() {
   
   // Chat & AI Generation State
   const [isPixeoPanelOpen, setIsPixeoPanelOpen] = useState(true);
+  const [mobileActiveView, setMobileActiveView] = useState<'studio' | 'pixeo'>('studio');
   const [chatInput, setChatInput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
@@ -240,8 +241,32 @@ export default function Pixeo() {
           </div>
         </div>
 
+        {/* Mobile View Switcher (Studio vs Pixeo AI) */}
+        <div className="flex lg:hidden items-center p-0.5 rounded-xl bg-white/5 border border-white/10 text-xs shrink-0">
+          <button
+            onClick={() => setMobileActiveView('studio')}
+            className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+              mobileActiveView === 'studio' 
+                ? 'bg-purple-600 text-white font-bold shadow' 
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            Studio
+          </button>
+          <button
+            onClick={() => setMobileActiveView('pixeo')}
+            className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+              mobileActiveView === 'pixeo' 
+                ? 'bg-purple-600 text-white font-bold shadow' 
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            Pixeo AI
+          </button>
+        </div>
+
         {/* Right Toolbar Controls */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="hidden sm:flex items-center gap-2.5 sm:gap-3">
           {/* Guided Toggle */}
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#12121f] border border-white/10 text-xs text-gray-300 font-medium">
             <span>Guided</span>
@@ -327,7 +352,7 @@ export default function Pixeo() {
       <div className="flex-1 flex overflow-hidden p-3 sm:p-4 gap-3 sm:gap-4 bg-[#07070c]">
         
         {/* ================= LEFT / MAIN CREATIVE STUDIO ================= */}
-        <div className="flex-1 flex flex-col bg-[#0a0a12] border border-white/10 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl relative">
+        <div className={`flex-1 ${mobileActiveView === 'studio' ? 'flex' : 'hidden lg:flex'} flex-col bg-[#0a0a12] border border-white/10 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl relative`}>
           
           {/* Main Creative Canvas Area */}
           <div className="flex-1 flex flex-col p-4 sm:p-6 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
@@ -498,7 +523,7 @@ export default function Pixeo() {
 
         {/* ================= RIGHT PANEL: PIXEO AI ASSISTANT ================= */}
         {isPixeoPanelOpen && (
-          <div className="w-[310px] sm:w-[340px] lg:w-[360px] bg-[#090912] border border-white/10 rounded-2xl sm:rounded-3xl flex flex-col shrink-0 relative overflow-hidden shadow-2xl">
+          <div className={`w-full lg:w-[360px] ${mobileActiveView === 'pixeo' ? 'flex' : 'hidden lg:flex'} bg-[#090912] border border-white/10 rounded-2xl sm:rounded-3xl flex-col shrink-0 relative overflow-hidden shadow-2xl`}>
             
             {/* Header: Pixeo title & Collapse button */}
             <div className="h-14 flex items-center justify-between px-4 bg-[#0b0b14] border-b border-white/5 shrink-0">

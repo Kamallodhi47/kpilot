@@ -1,14 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Megaphone, Gauge, Lightbulb, Image as ImageIcon, Bot, Box, Menu, ChevronDown, Moon, Sun, Users, ShieldCheck } from 'lucide-react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, Megaphone, Gauge, Lightbulb, Image as ImageIcon, Bot, Box, Menu, X, ChevronDown, Moon, Sun, Users, ShieldCheck, LogOut, Sparkles } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 export default function MainLayout() {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
   const location = useLocation();
+  const navigate = useNavigate();
   const [isLaunchCampaignOpen, setIsLaunchCampaignOpen] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [userName, setUserName] = useState('User');
+  const [userInitial, setUserInitial] = useState('U');
+  const [userEmail, setUserEmail] = useState('');
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -23,6 +33,9 @@ export default function MainLayout() {
           if (data.is_admin) {
             setIsAdmin(true);
           }
+          if (data.name) setUserName(data.name);
+          if (data.initial) setUserInitial(data.initial);
+          if (data.email) setUserEmail(data.email);
         }
       } catch (e) {
         // ignore
@@ -30,6 +43,11 @@ export default function MainLayout() {
     };
     checkAdmin();
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
 
   const navigation = [
     { name: 'Home', href: '/home', icon: Home },
@@ -49,11 +67,7 @@ export default function MainLayout() {
     { name: 'Pixeo', href: '/pixeo', icon: ImageIcon },
     { name: 'NEO', href: '/neo', icon: Bot },
     { name: 'Assets', href: '/assets', icon: Box },
-    // Admin Control navigation item
-    ...(isAdmin ? [{ name: 'Admin Control', href: '/admin', icon: ShieldCheck, badge: 'PRO' }] : [
-      // If not yet verified or admin, still expose Admin link so the owner can always find it
-      { name: 'Admin Control', href: '/admin', icon: ShieldCheck, badge: 'ADMIN' }
-    ]),
+    // Admin Control button hidden from navigation as requested
   ];
 
   return (
@@ -206,9 +220,9 @@ export default function MainLayout() {
       </div>
 
       {/* Main content */}
-      <div className={`flex flex-col flex-1 w-0 overflow-hidden ${isDark ? 'bg-[#0f0f13]' : 'bg-slate-100'} transition-all duration-300`}>
+      <div className={`flex flex-col flex-1 w-0 overflow-x-hidden ${isDark ? 'bg-[#0f0f13]' : 'bg-slate-100'} transition-all duration-300 relative`}>
         {/* Mobile Header */}
-        <div className={`md:hidden flex items-center justify-between p-4 ${isDark ? 'bg-black border-white/5' : 'bg-white border-slate-200 shadow-sm'} border-b`}>
+        <div className={`md:hidden flex items-center justify-between px-4 py-3 ${isDark ? 'bg-black/90 border-white/5' : 'bg-white/95 border-slate-200 shadow-sm'} backdrop-blur-md border-b sticky top-0 z-30`}>
           <div className="flex items-center gap-2.5">
             <div 
               className="kpilot-logo-badge w-8 h-8 rounded-lg flex items-center justify-center relative shadow-md shrink-0"
@@ -235,7 +249,7 @@ export default function MainLayout() {
                 <path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9L12 2Z" />
               </svg>
             </div>
-            <span className={`font-bold text-lg tracking-wider ${isDark ? 'text-white' : 'text-slate-900'}`}>PILOT</span>
+            <span className={`font-black text-lg tracking-wider ${isDark ? 'text-white' : 'text-slate-900'}`}>PILOT</span>
           </div>
           <div className="flex items-center gap-2">
             <button 
@@ -245,13 +259,149 @@ export default function MainLayout() {
             >
               {isDark ? <Moon className="w-5 h-5 text-purple-400" /> : <Sun className="w-5 h-5 text-amber-500" />}
             </button>
-            <button className={`p-2 rounded-md ${isDark ? 'text-white hover:bg-white/10' : 'text-slate-800 hover:bg-slate-100'}`}>
-              <Menu className="h-6 w-6" />
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className={`p-2 rounded-lg border ${isDark ? 'text-white border-white/10 hover:bg-white/10 bg-white/5' : 'text-slate-800 border-slate-200 hover:bg-slate-100 bg-white shadow-sm'}`}
+              title="Open Navigation Menu"
+            >
+              <Menu className="h-5 w-5" />
             </button>
           </div>
         </div>
+
+        {/* Mobile Slide-Out Drawer */}
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 z-50 md:hidden flex animate-in fade-in duration-200">
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+
+            {/* Drawer Sheet */}
+            <div className={`relative w-[285px] max-w-[85vw] h-full ${isDark ? 'bg-[#0b0a13] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900'} border-r shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-250`}>
+              {/* Drawer Top Header */}
+              <div className={`p-4 border-b ${isDark ? 'border-white/10 bg-[#08070e]' : 'border-slate-100 bg-slate-50'} flex items-center justify-between`}>
+                <div className="flex items-center gap-2.5">
+                  <div 
+                    className="w-8 h-8 rounded-lg flex items-center justify-center relative shadow-md shrink-0"
+                    style={{
+                      background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #f97316 100%)',
+                      backgroundColor: '#a855f7'
+                    }}
+                  >
+                    <span className="font-black text-lg select-none leading-none text-white">K</span>
+                  </div>
+                  <div>
+                    <span className={`font-black text-lg tracking-wider ${isDark ? 'text-white' : 'text-slate-900'}`}>PILOT</span>
+                    <p className="text-[10px] text-purple-400 font-semibold tracking-wider uppercase">Marketing OS</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`p-1.5 rounded-lg border ${isDark ? 'border-white/10 text-gray-400 hover:text-white hover:bg-white/10' : 'border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100'}`}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Navigation Items List */}
+              <div className="flex-1 overflow-y-auto p-3 space-y-1 scrollbar-none">
+                {navigation.map((item) => {
+                  const isActive = location.pathname === item.href || (item.children && item.children.some(c => location.pathname === c.href || location.pathname === c.alias));
+                  return (
+                    <div key={item.name} className="space-y-1">
+                      {item.hasChildren ? (
+                        <div>
+                          <button
+                            onClick={() => setIsLaunchCampaignOpen(!isLaunchCampaignOpen)}
+                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                              isActive
+                                ? isDark ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30' : 'bg-purple-50 text-purple-700 border border-purple-200'
+                                : isDark ? 'text-gray-300 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-100'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <item.icon className="w-5 h-5 text-purple-400" />
+                              <span>{item.name}</span>
+                            </div>
+                            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isLaunchCampaignOpen ? 'rotate-180' : ''}`} />
+                          </button>
+                          {isLaunchCampaignOpen && (
+                            <div className="ml-8 mt-1 space-y-1 border-l-2 border-purple-500/30 pl-2">
+                              {item.children?.map(sub => {
+                                const isSubActive = location.pathname === sub.href || location.pathname === sub.alias;
+                                return (
+                                  <Link
+                                    key={sub.name}
+                                    to={sub.href}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className={`block px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                      isSubActive
+                                        ? 'text-purple-400 font-bold bg-purple-500/10'
+                                        : isDark ? 'text-gray-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+                                    }`}
+                                  >
+                                    {sub.name}
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <Link
+                          to={item.href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                            isActive
+                              ? isDark ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30 font-bold' : 'bg-purple-50 text-purple-700 border border-purple-200 font-bold'
+                              : isDark ? 'text-gray-300 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          <item.icon className={`w-5 h-5 ${isActive ? 'text-purple-400' : isDark ? 'text-gray-400' : 'text-slate-500'}`} />
+                          <span>{item.name}</span>
+                        </Link>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Drawer Footer with Profile & Logout */}
+              <div className={`p-4 border-t ${isDark ? 'border-white/10 bg-[#08070e]' : 'border-slate-200 bg-slate-50'} space-y-3`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#ea580c] to-[#f97316] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-md">
+                      {userInitial}
+                    </div>
+                    <div className="min-w-0">
+                      <p className={`text-xs font-bold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{userName}</p>
+                      <p className="text-[10px] text-gray-400 truncate">{userEmail || 'Logged in'}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={toggleTheme}
+                    className={`p-2 rounded-lg border ${isDark ? 'border-white/10 text-purple-300 bg-white/5' : 'border-slate-300 text-amber-500 bg-white shadow-sm'}`}
+                    title="Toggle Theme"
+                  >
+                    {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 transition-all cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         
-        <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none">
+        <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none pb-20 md:pb-0">
           <div className={
             location.pathname === "/build" || 
             location.pathname === "/xeno" || 
@@ -262,11 +412,74 @@ export default function MainLayout() {
             location.pathname === "/admin" || 
             location.pathname === "/processing" 
               ? "h-full w-full" 
-              : "p-4 sm:p-6 md:p-8 h-full"
+              : "p-3 sm:p-6 md:p-8 h-full"
           }>
             <Outlet />
           </div>
         </main>
+
+        {/* Mobile Sticky Bottom Navigation Bar */}
+        <div className={`md:hidden fixed bottom-0 left-0 right-0 z-40 ${isDark ? 'bg-[#0a0a10]/95 border-white/10' : 'bg-white/95 border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]'} backdrop-blur-xl border-t px-2 py-1.5 flex items-center justify-around safe-area-pb`}>
+          <Link
+            to="/home"
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
+              location.pathname === '/home'
+                ? isDark ? 'text-purple-400 font-bold' : 'text-purple-600 font-bold'
+                : isDark ? 'text-gray-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Home className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5 font-medium">Home</span>
+          </Link>
+
+          <Link
+            to="/build"
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
+              location.pathname === '/build' || location.pathname === '/xeno' || location.pathname === '/campulse'
+                ? isDark ? 'text-purple-400 font-bold' : 'text-purple-600 font-bold'
+                : isDark ? 'text-gray-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Megaphone className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5 font-medium">Xeno</span>
+          </Link>
+
+          <Link
+            to="/dashboard"
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
+              location.pathname === '/dashboard' || location.pathname === '/optimise'
+                ? isDark ? 'text-purple-400 font-bold' : 'text-purple-600 font-bold'
+                : isDark ? 'text-gray-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Gauge className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5 font-medium">Dashboard</span>
+          </Link>
+
+          <Link
+            to="/pixeo"
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
+              location.pathname === '/pixeo'
+                ? isDark ? 'text-purple-400 font-bold' : 'text-purple-600 font-bold'
+                : isDark ? 'text-gray-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <ImageIcon className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5 font-medium">Pixeo</span>
+          </Link>
+
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
+              isMobileMenuOpen
+                ? isDark ? 'text-purple-400 font-bold' : 'text-purple-600 font-bold'
+                : isDark ? 'text-gray-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Menu className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5 font-medium">More</span>
+          </button>
+        </div>
       </div>
     </div>
   );
