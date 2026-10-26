@@ -592,7 +592,8 @@ def connect_meta_direct_token(req: DirectTokenConnectRequest, current_user: Opti
         
     details = fetch_meta_details(token)
     if not details.get("account_id") and not details.get("account_name"):
-        raise HTTPException(status_code=400, detail="Invalid Meta Access Token or unable to reach Meta Graph API")
+        err_msg = details.get("error") or "Invalid Meta Access Token or unable to reach Meta Graph API"
+        raise HTTPException(status_code=400, detail=f"Meta Token Error: {err_msg}")
     
     selected_id = None
     selected_name = None
@@ -602,11 +603,44 @@ def connect_meta_direct_token(req: DirectTokenConnectRequest, current_user: Opti
         formatted_id = target_ad_acc if target_ad_acc.startswith("act_") else f"act_{target_ad_acc}"
         selected_id = formatted_id
         selected_name = formatted_id
+        found = False
         for acc in details["ad_accounts"]:
-            if acc["id"] == formatted_id or acc.get("account_id") == target_ad_acc:
+            if acc["id"] == formatted_id or str(acc.get("account_id")) == target_ad_acc or str(acc.get("account_id")) == formatted_id.replace("act_", ""):
                 selected_name = acc.get("name", formatted_id)
                 selected_id = acc["id"]
+                found = True
                 break
+        
+        # If not present in /me/adaccounts list, verify directly with Meta Graph API
+        if not found:
+            try:
+                verify_url = f"https://graph.facebook.com/v19.0/{formatted_id}"
+                vr = requests.get(
+                    verify_url,
+                    params={"fields": "id,name,account_status,currency,amount_spent,timezone_name", "access_token": token},
+                    timeout=10
+                )
+                if vr.status_code == 200:
+                    ad_info = vr.json()
+                    selected_name = ad_info.get("name", formatted_id)
+                    details["ad_accounts"].insert(0, {
+                        "id": formatted_id,
+                        "account_id": formatted_id.replace("act_", ""),
+                        "name": selected_name,
+                        "account_status": ad_info.get("account_status", 1),
+                        "currency": ad_info.get("currency", "INR")
+                    })
+                else:
+                    err_msg = vr.text
+                    try:
+                        err_msg = vr.json().get("error", {}).get("message", err_msg)
+                    except Exception:
+                        pass
+                    raise HTTPException(status_code=400, detail=f"Meta Ad Account ({formatted_id}) inaccessible: {err_msg}")
+            except HTTPException:
+                raise
+            except Exception as e:
+                print("Notice verifying ad account:", e)
     elif details["ad_accounts"]:
         selected_id = details["ad_accounts"][0]["id"]
         selected_name = details["ad_accounts"][0]["name"]
@@ -618,12 +652,24 @@ def connect_meta_direct_token(req: DirectTokenConnectRequest, current_user: Opti
         current_user.selected_ad_account_id = selected_id
         current_user.selected_ad_account_name = selected_name
         db.commit()
+        db.refresh(current_user)
     else:
         os.environ["META_ACCESS_TOKEN"] = token
         if selected_id:
             os.environ["META_AD_ACCOUNT_ID"] = selected_id
         if selected_name:
             os.environ["META_AD_ACCOUNT_NAME"] = selected_name
+
+    global active_connected_meta
+    active_connected_meta = {
+        "connected": True,
+        "email": current_user.email if current_user else None,
+        "account_name": details["account_name"],
+        "account_id": details["account_id"],
+        "selected_ad_account_id": selected_id,
+        "selected_ad_account_name": selected_name,
+        "token": token
+    }
 
     # Persist token to .env for convenience across restarts
     try:

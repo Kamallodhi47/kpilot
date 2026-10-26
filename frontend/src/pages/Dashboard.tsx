@@ -3,7 +3,7 @@ import {
   Users, Eye, Target, MousePointerClick, CheckCircle2, AlertCircle, 
   Sparkles, TrendingUp, Zap, ShieldAlert, ArrowRight, RefreshCw, 
   ChevronRight, Filter, Download, ExternalLink, Moon, Sun, Check, Plus, BarChart3, Layers, Sliders,
-  Globe, LogOut, AlertTriangle
+  Globe, LogOut, AlertTriangle, Key
 } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -55,6 +55,7 @@ export default function Dashboard({ defaultTab = 'overview' }: DashboardProps) {
   const [isLoadingCampaigns, setIsLoadingCampaigns] = useState<boolean>(false);
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState<boolean>(false);
+  const [modalInitialTab, setModalInitialTab] = useState<'manual' | 'oauth' | 'sandbox'>('manual');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   
   const [userInitial, setUserInitial] = useState<string>('U');
@@ -212,6 +213,7 @@ export default function Dashboard({ defaultTab = 'overview' }: DashboardProps) {
   };
 
   const handlePromptCustomToken = () => {
+    setModalInitialTab('manual');
     setIsConnectModalOpen(true);
   };
 
@@ -330,10 +332,15 @@ export default function Dashboard({ defaultTab = 'overview' }: DashboardProps) {
               </button>
               <button
                 onClick={handlePromptCustomToken}
-                className={`px-3 py-2.5 rounded-xl text-xs font-semibold border ${isDark ? 'border-white/10 text-gray-300 hover:bg-white/5' : 'border-slate-300 text-slate-700 hover:bg-slate-100'} transition-colors cursor-pointer whitespace-nowrap`}
-                title="Connect by Account ID manually"
+                className={`px-3.5 py-2.5 rounded-xl text-xs font-bold border ${
+                  isDark 
+                    ? 'border-purple-500/30 text-purple-300 bg-purple-950/30 hover:bg-purple-900/40' 
+                    : 'border-indigo-200 text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100'
+                } transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 shadow-sm`}
+                title="Connect directly with Meta Access Token & Ad Account ID (No App Review Required)"
               >
-                Manual ID
+                <Key className="w-3.5 h-3.5" />
+                <span>Manual ID / Token</span>
               </button>
             </div>
           </div>
@@ -984,6 +991,7 @@ export default function Dashboard({ defaultTab = 'overview' }: DashboardProps) {
 
       <MetaConnectModal
         isOpen={isConnectModalOpen}
+        initialTab={modalInitialTab}
         onClose={() => setIsConnectModalOpen(false)}
         onSuccess={async () => {
           showNotification("🎉 Meta Connected Successfully!");
